@@ -38,6 +38,7 @@ import {
 } from '@project-serum/pool';
 import * as instruction from './instruction';
 import * as accounts from './accounts';
+import { LockedRewardVendor } from './accounts/locked-vendor';
 import {
   Registrar,
   SIZE as REGISTRAR_SIZE,
@@ -1758,11 +1759,24 @@ class Accounts {
   ): Promise<ProgramAccount<metaEntity.accounts.mqueue.MQueue>> {
     const accountInfo = await this.provider.connection.getAccountInfo(address);
     if (accountInfo === null) {
-      throw new Error(`Entity does not exist ${address}`);
+      throw new Error(`MQueue does not exist ${address}`);
     }
     return {
       publicKey: address,
       account: new metaEntity.accounts.mqueue.MQueue(accountInfo.data),
+    };
+  }
+
+  async lockedRewardVendor(
+    address: PublicKey,
+  ): Promise<ProgramAccount<LockedRewardVendor>> {
+    const accountInfo = await this.provider.connection.getAccountInfo(address);
+    if (accountInfo === null) {
+      throw new Error(`Vendor does not exist ${address}`);
+    }
+    return {
+      publicKey: address,
+      account: accounts.lockedRewardVendor.decode(accountInfo.data),
     };
   }
 }

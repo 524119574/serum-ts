@@ -16,3 +16,4 @@ export {
   PoolDrop,
   LockedAlloc,
 } from './reward-event-q';
+export { LockedRewardVendor } from './locked-vendor';

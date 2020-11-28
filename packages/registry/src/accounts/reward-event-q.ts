@@ -4,8 +4,8 @@ import { PublicKey } from '@solana/web3.js';
 import { publicKey, u64, i64, str, rustEnum, vec } from '@project-serum/borsh';
 import { Ring, RingItemDecoder } from './ring';
 
-const CAPACITY = 500;
-const MESSAGE_SIZE = 145;
+const CAPACITY = 14598;
+const MESSAGE_SIZE = 137;
 
 export class RewardEventQueue extends Ring<RewardEvent> {
   constructor(data: Buffer) {
@@ -42,10 +42,9 @@ export type PoolDrop = {
 export type LockedAlloc = {
   from: PublicKey;
   total: BN;
-  expirtyTs: BN;
-  expiryReceiver: BN;
   pool: PublicKey;
   lockedVendor: PublicKey;
+  mint: PublicKey;
 };
 
 const REWARD_EVENT_LAYOUT: Layout<RewardEvent> = rustEnum([
@@ -57,10 +56,9 @@ const REWARD_EVENT_LAYOUT: Layout<RewardEvent> = rustEnum([
     [
       publicKey('from'),
       u64('total'),
-      i64('expiryTs'),
-      publicKey('expiryReceiver'),
       publicKey('pool'),
       publicKey('lockedVendor'),
+      publicKey('mint'),
     ],
     'lockedAlloc',
   ),

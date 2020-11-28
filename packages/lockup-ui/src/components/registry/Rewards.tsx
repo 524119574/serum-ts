@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import BN from 'bn.js';
 import { useSnackbar } from 'notistack';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import LockIcon from '@material-ui/icons/Lock';
 import Dialog from '@material-ui/core/Dialog';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -23,24 +23,24 @@ import Paper from '@material-ui/core/Paper';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
+import ExpandLess from '@material-ui/icons/ExpandLess';
+import ExpandMore from '@material-ui/icons/ExpandMore';
 import * as registry from '@project-serum/registry';
 import { PublicKey } from '@solana/web3.js';
-import { Network } from '@project-serum/common';
-import { TransactionSignature } from '@solana/web3.js';
+import { Network, ProgramAccount } from '@project-serum/common';
 import { useWallet } from '../../components/common/WalletProvider';
 import OwnedTokenAccountsSelect from '../common/OwnedTokenAccountsSelect';
-import { ViewTransactionOnExplorerButton } from '../common/Notification';
 import { State as StoreState } from '../../store/reducer';
-import AppBar from '@material-ui/core/AppBar';
 import * as notification from '../common/Notification';
 
 export default function Rewards() {
-  const { rewardEventQueue } = useSelector((state: StoreState) => {
+  const { rewardEventQueue, network } = useSelector((state: StoreState) => {
     return {
       rewardEventQueue: state.registry.rewardEventQueue,
+			network: state.common.network,
     };
   });
-  const rewards = rewardEventQueue!.account.messages();
+  const rewards = rewardEventQueue!.account.messages().reverse();
   return (
     <div style={{ width: '100%', marginTop: '24px' }}>
       <div
@@ -60,7 +60,7 @@ export default function Rewards() {
       <Paper>
         <List>
           {rewards.map(r => {
-            return <RewardListItem reward={r} />;
+            return <RewardListItem network={network} reward={r} />;
           })}
         </List>
       </Paper>
@@ -92,14 +92,17 @@ type DropRewardsDialogProps = {
 
 type RewardListItemProps = {
   reward: registry.accounts.RewardEvent;
+	network: Network;
 };
 
 function RewardListItem(props: RewardListItemProps) {
-  const { reward } = props;
+  const { reward, network } = props;
   if (reward.poolDrop !== undefined) {
     return <PoolDropReward poolDrop={reward.poolDrop} />;
   } else {
-    return <div>{JSON.stringify(reward)}</div>;
+    return <LockedReward
+						 lockedAlloc={reward.lockedAlloc!}
+						 network={network} />;
   }
 }
 
@@ -109,6 +112,7 @@ type PoolDropRewardProps = {
 
 function PoolDropReward(props: PoolDropRewardProps) {
   const { poolDrop } = props;
+
   let amountLabel = `${poolDrop.totals[0].toString()} SRM`;
   if (poolDrop.totals.length === 2) {
     amountLabel += ` ${poolDrop.totals[1].toString()} MSRM`;
@@ -117,7 +121,8 @@ function PoolDropReward(props: PoolDropRewardProps) {
   let fromLabel = poolDrop.from.toString();
   return (
     <>
-      <ListItem>
+      <ListItem button>
+			<LockIcon style={{ visibility: 'hidden', marginRight: '16px' }} />
         <ListItemText
           primary={<>{`${amountLabel} ${lockedLabel}`}</>}
           secondary={fromLabel}
@@ -125,6 +130,89 @@ function PoolDropReward(props: PoolDropRewardProps) {
       </ListItem>
     </>
   );
+}
+
+type LockedRewardProps = {
+  lockedAlloc: registry.accounts.LockedAlloc;
+	network: Network;
+};
+
+function LockedReward(props: LockedRewardProps) {
+	const { registryClient } = useWallet();
+  const { lockedAlloc, network } = props;
+  const [open, setOpen] = useState(false);
+	let [vendor, setVendor] = useState<null | registry.accounts.LockedRewardVendor>(null);
+  let amountLabel = `${lockedAlloc.total.toString()}`;
+	if (lockedAlloc.mint.equals(network.srm)) {
+		amountLabel += ' SRM';
+	} else if (lockedAlloc.mint.equals(network.msrm)) {
+		amountLabel += ' MSRM';
+	} else {
+		amountLabel += ` ${lockedAlloc.mint}`;
+	}
+  let lockedLabel = 'locked';
+  let fromLabel = `${lockedAlloc.pool.toString()} | ${lockedAlloc.from.toString()}`;
+
+  return (
+    <>
+    <ListItem button onClick={async () => {
+			if (vendor === null) {
+				let v = await registryClient.accounts.lockedRewardVendor(lockedAlloc.lockedVendor);
+				setVendor(v.account);
+			}
+			setOpen((open) => !open);
+		}}>
+		<LockIcon style={{ marginRight: '16px'}} />
+        <ListItemText
+          primary={<>{`${amountLabel} ${lockedLabel}`}</>}
+          secondary={fromLabel}
+    />
+		{open ? <ExpandLess /> : <ExpandMore />}
+      </ListItem>
+      <Collapse in={open} timeout="auto" unmountOnExit>
+				{vendor === null ? (
+				<CircularProgress />
+				) : (
+					<LockedRewardDetails
+					vendor={{ publicKey: lockedAlloc.lockedVendor, account: vendor }}
+					/>
+				)}
+      </Collapse>
+    </>
+  );
+}
+
+type LockedRewardDetailsProps = {
+	vendor: ProgramAccount<registry.accounts.LockedRewardVendor>;
+};
+
+function LockedRewardDetails(props: LockedRewardDetailsProps) {
+	let { vendor } = props;
+
+	return (
+		<div style={{
+			marginLeft: '56px',
+		}}>
+			<Typography variant="h6">
+				Vendor
+			</Typography>
+			<Typography>
+				Address: {vendor.publicKey.toString()}
+			</Typography>
+			<Typography>
+				Vault: {vendor.account.vault.toString()}
+			</Typography>
+			<Typography>
+				Pool token supply snapshot: {vendor.account.poolTokenSupply.toString()}
+			</Typography>
+			<Typography>
+				Expiry: {(new Date(vendor.account.expiryTs.toNumber()*1000)).toLocaleDateString()}
+			</Typography>
+			<Typography>
+				Expiry receiver: {vendor.account.expiryReceiver.toString()}
+			</Typography>
+		</div>
+	);
 }
 
 enum PoolTabViewModel {
