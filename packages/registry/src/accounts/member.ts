@@ -21,7 +21,7 @@ export interface Member {
   metadata: PublicKey;
   spt: PublicKey;
   sptMega: PublicKey;
-  lockedRewardsCursor: number;
+  rewardsCursor: number;
   lastStakeTs: BN;
 }
 
@@ -66,7 +66,7 @@ export const MEMBER_LAYOUT: Layout<Member> = struct([
   publicKey('metadata'),
   publicKey('spt'),
   publicKey('sptMega'),
-  u32('lockedRewardsCursor'),
+  u32('rewardsCursor'),
   borshI64('lastStakeTs'),
 ]);
 
@@ -114,7 +114,7 @@ export function defaultMember(): Member {
     metadata: new PublicKey(Buffer.alloc(32)),
     spt: new PublicKey(Buffer.alloc(32)),
     sptMega: new PublicKey(Buffer.alloc(32)),
-    lockedRewardsCursor: 0,
+    rewardsCursor: 0,
     lastStakeTs: new BN(0),
   };
 }

@@ -13,11 +13,11 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import TextField from '@material-ui/core/TextField';
-import { useWallet } from '../../components/common/WalletProvider';
-import { ProgramAccount, State as StoreState } from '../../store/reducer';
-import { ActionType } from '../../store/actions';
+import { useWallet } from '../../../components/common/WalletProvider';
+import { ProgramAccount, State as StoreState } from '../../../store/reducer';
+import { ActionType } from '../../../store/actions';
 import Entity from './Entity';
-import * as skin from '../../skin';
+import * as skin from '../../../skin';
 
 export default function EntityGallery() {
   const [entityAddress, setEntityAddress] = useState<null | PublicKey>(null);

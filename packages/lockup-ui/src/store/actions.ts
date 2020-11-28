@@ -15,7 +15,6 @@ export enum ActionType {
   CommonSetNetwork,
   CommonOwnedTokenAccountsSet,
   CommonWalletReset,
-  ConsumeLoginOnceToken,
 
   // Solana.
   SolanaSlotUpdate,

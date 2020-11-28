@@ -28,9 +28,9 @@ import OwnedTokenAccountsSelect from '../../components/common/OwnedTokenAccounts
 import { ViewTransactionOnExplorerButton } from '../../components/common/Notification';
 import { State as StoreState, ProgramAccount } from '../../store/reducer';
 import { ActionType } from '../../store/actions';
-import EntityGallery, { EntityActivityLabel } from './EntityGallery';
+import EntityGallery, { EntityActivityLabel } from './nodes/EntityGallery';
 import Me from './Me';
-import Rewards from './Rewards';
+import Rewards from './rewards/Rewards';
 
 enum TabModel {
   Me,

@@ -59,9 +59,6 @@ export default function reducer(
     case ActionType.CommonOwnedTokenAccountsSet:
       newState.common.ownedTokenAccounts = action.item.ownedTokenAccounts;
       return newState;
-    case ActionType.ConsumeLoginOnceToken:
-      newState.common.loginOnceToken = false;
-      return newState;
 
     // Solana.
     case ActionType.SolanaSlotUpdate:
@@ -190,7 +187,6 @@ export type State = {
 };
 
 export type CommonState = {
-  loginOnceToken: boolean;
   walletProvider?: string;
   isWalletConnected: boolean;
   bootstrapTrigger: boolean;
@@ -234,10 +230,9 @@ export const initialState: State = {
   common: {
     bootstrapTrigger: false,
     shutdownTrigger: false,
-    loginOnceToken: true,
+    isWalletConnected: false,
     walletProvider: 'https://www.sollet.io',
     bootstrapState: BootstrapState.NeedsBootstrap,
-    isWalletConnected: false,
     network: networks.devnet,
     ownedTokenAccounts: [],
   },
