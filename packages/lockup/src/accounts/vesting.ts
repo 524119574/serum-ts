@@ -9,15 +9,12 @@ export interface Vesting {
   beneficiary: PublicKey;
   mint: PublicKey;
   vault: PublicKey;
-  claimed: boolean;
   grantor: PublicKey;
   balance: BN;
   startBalance: BN;
   startTs: BN;
   endTs: BN;
   periodCount: BN;
-  lockedNftMint: PublicKey;
-  lockedNftToken: PublicKey;
   whitelistOwned: BN;
   nonce: number;
 }
@@ -28,15 +25,12 @@ export const VESTING_LAYOUT: Layout<Vesting> = struct([
   publicKey('beneficiary'),
   publicKey('mint'),
   publicKey('vault'),
-  bool('claimed'),
   publicKey('grantor'),
   u64('balance'),
   u64('startBalance'),
   i64('startTs'),
   i64('endTs'),
   u64('periodCount'),
-  publicKey('lockedNftMint'),
-  publicKey('lockedNftToken'),
   u64('whitelistOwned'),
   u8('nonce'),
 ]);
@@ -58,15 +52,12 @@ export function defaultVesting(): Vesting {
     beneficiary: new PublicKey(Buffer.alloc(32)),
     mint: new PublicKey(Buffer.alloc(32)),
     vault: new PublicKey(Buffer.alloc(32)),
-    claimed: false,
     grantor: new PublicKey(Buffer.alloc(32)),
     balance: new BN(0),
     startBalance: new BN(0),
     startTs: new BN(0),
     endTs: new BN(0),
     periodCount: new BN(0),
-    lockedNftMint: new PublicKey(Buffer.alloc(32)),
-    lockedNftToken: new PublicKey(Buffer.alloc(32)),
     whitelistOwned: new BN(0),
     nonce: 0,
   };

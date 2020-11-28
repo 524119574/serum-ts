@@ -7,7 +7,6 @@ import { WhitelistEntry, WHITELIST_ENTRY_LAYOUT } from './accounts/whitelist';
 export type LockupInstruction =
   | Initialize
   | CreateVesting
-  | Claim
   | Redeem
   | WhitelistWithdraw
   | WhitelistDeposit
@@ -25,8 +24,6 @@ type CreateVesting = {
   periodCount: BN;
   depositAmount: BN;
 };
-
-type Claim = {};
 
 type Redeem = {};
 
@@ -63,7 +60,6 @@ const LOCKUP_INSTRUCTION_LAYOUT: Layout<LockupInstruction> = rustEnum([
     ],
     'createVesting',
   ),
-  struct([], 'claim'),
   struct([u64('amount')], 'redeem'),
   struct([u64('amount'), vecU8('instructionData')], 'whitelistWithdraw'),
   struct([vecU8('instructionData')], 'whitelistDeposit'),

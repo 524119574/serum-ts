@@ -175,7 +175,6 @@ export default class Client {
 
     const vesting = new Account();
     const vault = new Account();
-    const lockedTokenMint = new Account();
 
     const [vaultAuthority, nonce] = await PublicKey.findProgramAddress(
       [this.safe.toBuffer(), vesting.publicKey.toBuffer()],
@@ -187,16 +186,10 @@ export default class Client {
       mint,
       vaultAuthority,
     );
-    const createLockedTokenMintInstructions = await createMintInstructions(
-      this.provider,
-      vaultAuthority,
-      lockedTokenMint.publicKey,
-    );
 
     const tx = new Transaction();
     tx.add(
       ...createVaultInstructions,
-      ...createLockedTokenMintInstructions,
       // Allocate account.
       SystemProgram.createAccount({
         fromPubkey: this.provider.wallet.publicKey,
@@ -219,11 +212,6 @@ export default class Client {
           },
           { pubkey: vault.publicKey, isWritable: true, isSigner: false },
           { pubkey: this.safe, isWritable: false, isSigner: false },
-          {
-            pubkey: lockedTokenMint.publicKey,
-            isWritable: true,
-            isSigner: false,
-          },
           { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false },
           { pubkey: SYSVAR_RENT_PUBKEY, isWritable: false, isSigner: false },
           { pubkey: SYSVAR_CLOCK_PUBKEY, isWritable: false, isSigner: false },
@@ -241,36 +229,23 @@ export default class Client {
       }),
     );
 
-    let signers = [vesting, vault, lockedTokenMint, depositorAuthority];
+    let signers = [vesting, vault, depositorAuthority];
 
     let txSig = await this.provider.send(tx, signers);
 
     return {
       tx: txSig,
       vesting: vesting.publicKey,
-      lockedTokenMint: lockedTokenMint.publicKey,
     };
   }
 
   async claim(req: ClaimRequest): Promise<ClaimResponse> {
-    let { beneficiary, vesting, lockedTokenAccount, lockedTokenMint } = req;
+    let { beneficiary, vesting } = req;
 
     const beneficiaryAddress =
       beneficiary === undefined
         ? this.provider.wallet.publicKey
         : beneficiary.publicKey;
-
-    if (lockedTokenMint === undefined) {
-      lockedTokenMint = (await this.accounts.vesting(this.safe)).lockedNftMint;
-    }
-
-    if (lockedTokenAccount === undefined) {
-      lockedTokenAccount = await createTokenAccount(
-        this.provider,
-        lockedTokenMint,
-        beneficiaryAddress,
-      );
-    }
 
     const vaultAuthority = await this.accounts.vaultAuthority(
       this.programId,
@@ -287,8 +262,6 @@ export default class Client {
           { pubkey: this.safe, isWritable: false, isSigner: false },
           { pubkey: vaultAuthority, isWritable: false, isSigner: false },
           { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false },
-          { pubkey: lockedTokenMint, isWritable: true, isSigner: false },
-          { pubkey: lockedTokenAccount, isWritable: true, isSigner: false },
         ],
         programId: this.programId,
         data: instruction.encode({
@@ -302,7 +275,6 @@ export default class Client {
 
     return {
       tx: txSig,
-      lockedTokenAccount,
     };
   }
 
@@ -333,16 +305,6 @@ export default class Client {
           { pubkey: vault, isWritable: true, isSigner: false },
           { pubkey: vaultAuthority, isWritable: false, isSigner: false },
           { pubkey: this.safe, isWritable: false, isSigner: false },
-          {
-            pubkey: vestingAcc.lockedNftToken,
-            isWritable: true,
-            isSigner: false,
-          },
-          {
-            pubkey: vestingAcc.lockedNftMint,
-            isWritable: true,
-            isSigner: false,
-          },
           { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false },
           { pubkey: SYSVAR_CLOCK_PUBKEY, isWritable: false, isSigner: false },
         ],
@@ -721,19 +683,15 @@ type CreateVestingRequest = {
 type CreateVestingResponse = {
   tx: TransactionSignature;
   vesting: PublicKey;
-  lockedTokenMint: PublicKey;
 };
 
 type ClaimRequest = {
   vesting: PublicKey;
-  lockedTokenMint: PublicKey;
-  lockedTokenAccount?: PublicKey;
   beneficiary?: Account;
 };
 
 type ClaimResponse = {
   tx: TransactionSignature;
-  lockedTokenAccount: PublicKey;
 };
 
 type RedeemRequest = {

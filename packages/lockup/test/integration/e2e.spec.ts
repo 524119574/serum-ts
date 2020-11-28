@@ -67,7 +67,7 @@ describe('End-to-end tests', () => {
     const endTs = new BN((blockTime as number) + 100);
     const periodCount = new BN(10);
     const depositAmount = new BN([0, 0, 0, 0, 0, 0, 0, 100]);
-    const { vesting, lockedTokenMint } = await client.createVesting({
+    const { vesting } = await client.createVesting({
       beneficiary: provider.wallet.publicKey,
       endTs,
       periodCount,
@@ -76,7 +76,6 @@ describe('End-to-end tests', () => {
     });
     let vestingAcc = await client.accounts.vesting(vesting);
     expect(vestingAcc.initialized).toEqual(true);
-    expect(vestingAcc.claimed).toEqual(false);
     expect(vestingAcc.beneficiary).toEqual(provider.wallet.publicKey);
     expect(vestingAcc.balance.toNumber()).toEqual(depositAmount.toNumber());
     expect(vestingAcc.startBalance.toNumber()).toEqual(
@@ -84,20 +83,7 @@ describe('End-to-end tests', () => {
     );
     expect(vestingAcc.endTs.toNumber()).toEqual(endTs.toNumber());
     expect(vestingAcc.periodCount.toNumber()).toEqual(periodCount.toNumber());
-    expect(vestingAcc.lockedNftMint).toEqual(lockedTokenMint);
-    expect(vestingAcc.lockedNftToken).toEqual(publicKeyZero);
     expect(vestingAcc.whitelistOwned).toEqual(u64Zero);
-
-    // Claim a Vesting account.
-    const { lockedTokenAccount } = await client.claim({
-      vesting,
-      lockedTokenMint,
-    });
-    vestingAcc = await client.accounts.vesting(vesting);
-    expect(vestingAcc.lockedNftToken).toEqual(lockedTokenAccount);
-    let token = await getTokenAccount(provider, lockedTokenAccount);
-    expect(token.amount).toEqual(depositAmount);
-    expect(token.owner).toEqual(vestingAcc.beneficiary);
 
     // Wait for a vesting period to pass.
     await sleep(5 * 1000);
@@ -114,7 +100,7 @@ describe('End-to-end tests', () => {
       vesting,
       tokenAccount,
     });
-    token = await getTokenAccount(provider, tokenAccount);
+    let token = await getTokenAccount(provider, tokenAccount);
     expect(token.amount).toEqual(redeemAmount);
   });
 });
