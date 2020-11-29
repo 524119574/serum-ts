@@ -5,10 +5,12 @@ import BN from 'bn.js';
 
 export interface LockedRewardVendor {
   initialized: boolean;
+  registrar: PublicKey;
   vault: PublicKey;
   nonce: number;
   poolTokenSupply: BN;
   rewardEventQueueCursor: number;
+  startTs: BN;
   expiryTs: BN;
   expiryReceiver: PublicKey;
   total: BN;
@@ -17,10 +19,12 @@ export interface LockedRewardVendor {
 
 const LOCKED_REWARD_VENDOR_LAYOUT: Layout<LockedRewardVendor> = borsh.struct([
   borsh.bool('initialized'),
+  borsh.publicKey('registrar'),
   borsh.publicKey('vault'),
   borsh.u8('nonce'),
   borsh.u64('poolTokenSupply'),
   borsh.u32('rewardEventQueueCursor'),
+  borsh.i64('startTs'),
   borsh.i64('expiryTs'),
   borsh.publicKey('expiryReceiver'),
   borsh.u64('total'),
@@ -40,10 +44,12 @@ export function encode(v: LockedRewardVendor): Buffer {
 export function defaultLockedRewardVendor(): LockedRewardVendor {
   return {
     initialized: false,
+    registrar: new PublicKey(Buffer.alloc(32)),
     vault: new PublicKey(Buffer.alloc(32)),
     nonce: 0,
     poolTokenSupply: new BN(0),
     rewardEventQueueCursor: 0,
+    startTs: new BN(0),
     expiryTs: new BN(0),
     expiryReceiver: new PublicKey(Buffer.alloc(32)),
     total: new BN(0),

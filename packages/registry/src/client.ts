@@ -36,6 +36,7 @@ import {
   Basket,
   PoolInstructions,
 } from '@project-serum/pool';
+import { txIx as lockupTxIx } from '@project-serum/lockup';
 import * as instruction from './instruction';
 import * as accounts from './accounts';
 import { LockedRewardVendor } from './accounts/locked-vendor';
@@ -1275,6 +1276,7 @@ export default class Client {
             isSigner: false,
           },
           { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false },
+          { pubkey: SYSVAR_CLOCK_PUBKEY, isWritable: false, isSigner: false },
         ],
         programId: this.programId,
         data: instruction.encode({
@@ -1289,6 +1291,68 @@ export default class Client {
     );
 
     let signers: any = [lockedVendor, lockedVendorVault];
+    let txSig = await this.provider.send(tx, signers);
+    return {
+      tx: txSig,
+    };
+  }
+
+  async claimLockedReward(
+    req: ClaimLockedRewardRequest,
+  ): Promise<ClaimLockedRewardResponse> {
+    let {
+      cursor,
+      member,
+      vendor,
+      vendorVault,
+      vendorSigner,
+      safe,
+      lockupProgramId,
+      mint,
+    } = req;
+
+    const vesting = new Account();
+    const vestingVault = new Account();
+
+    const { nonce, ixs } = await lockupTxIx.allocVestingIxs(
+      this.provider,
+      lockupProgramId,
+      safe,
+      vesting.publicKey,
+      vestingVault.publicKey,
+      mint,
+    );
+
+    const tx = new Transaction();
+    tx.add(
+      ...ixs,
+      new TransactionInstruction({
+        keys: [
+          { pubkey: member, isWritable: true, isSigner: false },
+          { pubkey: this.registrar, isWritable: false, isSigner: false },
+          { pubkey: this.rewardEventQueue, isWritable: false, isSigner: false },
+          { pubkey: vendor, isWritable: false, isSigner: false },
+          { pubkey: vendorVault, isWritable: true, isSigner: false },
+          { pubkey: vendorSigner, isWritable: false, isSigner: false },
+          { pubkey: safe, isWritable: false, isSigner: false },
+          { pubkey: lockupProgramId, isWritable: false, isSigner: false },
+          { pubkey: vesting.publicKey, isWritable: true, isSigner: false },
+          { pubkey: vestingVault.publicKey, isWritable: true, isSigner: false },
+          { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false },
+          { pubkey: SYSVAR_RENT_PUBKEY, isWritable: false, isSigner: false },
+          { pubkey: SYSVAR_CLOCK_PUBKEY, isWritable: false, isSigner: false },
+        ],
+        programId: this.programId,
+        data: instruction.encode({
+          claimLockedReward: {
+            cursor,
+            nonce,
+          },
+        }),
+      }),
+    );
+
+    let signers: any = [];
     let txSig = await this.provider.send(tx, signers);
     return {
       tx: txSig,
@@ -1994,6 +2058,21 @@ type DropLockedRewardRequest = {
 };
 
 type DropLockedRewardResponse = {
+  tx: TransactionSignature;
+};
+
+type ClaimLockedRewardRequest = {
+  cursor: BN;
+  member: PublicKey;
+  vendor: PublicKey;
+  vendorVault: PublicKey;
+  vendorSigner: PublicKey;
+  safe: PublicKey;
+  lockupProgramId: PublicKey;
+  mint: PublicKey;
+};
+
+type ClaimLockedRewardResponse = {
   tx: TransactionSignature;
 };
 

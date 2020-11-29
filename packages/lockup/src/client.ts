@@ -34,6 +34,7 @@ import {
   WhitelistEntry,
   SIZE as WHITELIST_SIZE,
 } from './accounts/whitelist';
+import * as transactionIx from './transaction-instruction';
 
 type Config = {
   provider: Provider;
@@ -176,61 +177,24 @@ export default class Client {
     const vesting = new Account();
     const vault = new Account();
 
-    const [vaultAuthority, nonce] = await PublicKey.findProgramAddress(
-      [this.safe.toBuffer(), vesting.publicKey.toBuffer()],
-      this.programId,
-    );
-    const createVaultInstructions = await createTokenAccountInstrs(
+    let createVestingIxs = await transactionIx.createVesting(
       this.provider,
+      this.programId,
+      this.safe,
+      vesting.publicKey,
       vault.publicKey,
       mint,
-      vaultAuthority,
+      depositor,
+      depositorAuthorityPubkey,
+      beneficiary,
+      endTs,
+      periodCount,
+      depositAmount,
     );
 
     const tx = new Transaction();
-    tx.add(
-      ...createVaultInstructions,
-      // Allocate account.
-      SystemProgram.createAccount({
-        fromPubkey: this.provider.wallet.publicKey,
-        newAccountPubkey: vesting.publicKey,
-        space: VESTING_SIZE,
-        lamports: await this.provider.connection.getMinimumBalanceForRentExemption(
-          VESTING_SIZE,
-        ),
-        programId: this.programId,
-      }),
-      // Create Vesting.
-      new TransactionInstruction({
-        keys: [
-          { pubkey: vesting.publicKey, isWritable: true, isSigner: false },
-          { pubkey: depositor, isWritable: true, isSigner: false },
-          {
-            pubkey: depositorAuthorityPubkey,
-            isWritable: false,
-            isSigner: true,
-          },
-          { pubkey: vault.publicKey, isWritable: true, isSigner: false },
-          { pubkey: this.safe, isWritable: false, isSigner: false },
-          { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false },
-          { pubkey: SYSVAR_RENT_PUBKEY, isWritable: false, isSigner: false },
-          { pubkey: SYSVAR_CLOCK_PUBKEY, isWritable: false, isSigner: false },
-        ],
-        programId: this.programId,
-        data: instruction.encode({
-          createVesting: {
-            beneficiary,
-            endTs,
-            periodCount,
-            depositAmount,
-            nonce,
-          },
-        }),
-      }),
-    );
-
+    tx.add(...createVestingIxs);
     let signers = [vesting, vault, depositorAuthority];
-
     let txSig = await this.provider.send(tx, signers);
 
     return {

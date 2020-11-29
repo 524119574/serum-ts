@@ -99,7 +99,9 @@ type DropLockedReward = {
   nonce: number;
 };
 
-type ClaimLockedReward = {};
+type ClaimLockedReward = {
+  cursor: BN;
+};
 
 const REGISTRY_INSTRUCTION_LAYOUT: Layout<RegistryInstruction> = rustEnum([
   struct(
@@ -143,7 +145,7 @@ const REGISTRY_INSTRUCTION_LAYOUT: Layout<RegistryInstruction> = rustEnum([
     [u64('total'), i64('expiryTs'), publicKey('expiryReceiver'), u8('nonce')],
     'dropLockedReward',
   ),
-  struct([], 'claimLockedReward'),
+  struct([u64('cursor')], 'claimLockedReward'),
 ]);
 
 export function decode(data: Buffer): RegistryInstruction {
