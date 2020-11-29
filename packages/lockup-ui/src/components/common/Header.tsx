@@ -9,10 +9,8 @@ import Menu from '@material-ui/core/Menu';
 import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import IconButton from '@material-ui/core/IconButton';
-import LockIcon from '@material-ui/icons/Lock';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import PoolIcon from '@material-ui/icons/Pool';
 import Button from '@material-ui/core/Button';
 import PersonIcon from '@material-ui/icons/Person';
 import BubbleChartIcon from '@material-ui/icons/BubbleChart';
@@ -61,13 +59,13 @@ export default function Header(props: HeaderProps) {
               display: 'flex',
             }}
           >
-            {!isAppReady && <NetworkSelector />}
+            <NetworkSelector />
             <WalletConnectButton
               style={{
                 display: isAppReady ? 'none' : '',
               }}
             />
-            {isAppReady && <UserWalletDropdown />}
+            {isAppReady && <UserSelector />}
           </div>
         </div>
       </Toolbar>
@@ -130,31 +128,12 @@ function BarButton(props: BarButtonProps) {
   );
 }
 
-function UserWalletDropdown() {
-  const history = useHistory();
-
-  return (
-    <>
-      <div onClick={() => history.push('/registry/pool')}>
-        <IconButton color="inherit">
-          <PoolIcon />
-        </IconButton>
-      </div>
-      <div onClick={() => history.push('/lockup')}>
-        <IconButton color="inherit">
-          <LockIcon />
-        </IconButton>
-      </div>
-      <UserSelector />
-    </>
-  );
-}
-
 function NetworkSelector() {
   const network = useSelector((state: StoreState) => {
     return state.common.network;
   });
   const dispatch = useDispatch();
+	const { wallet } = useWallet();
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleClose = () => {

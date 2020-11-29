@@ -85,48 +85,66 @@ function DropLockedForm(props: DropUnlockedFormProps) {
   const { onClose, poolTab } = props;
   const snack = useSnackbar();
   const { registryClient } = useWallet();
-  const { network, pool, megaPool, poolTokenMint, megaPoolTokenMint } = useSelector((state: StoreState) => {
+  const {
+    network,
+    pool,
+    megaPool,
+    poolTokenMint,
+    megaPoolTokenMint,
+  } = useSelector((state: StoreState) => {
     return {
-			network: state.common.network,
-			pool: state.registry.pool!,
-			poolTokenMint: state.registry.poolTokenMint!,
-			megaPool: state.registry.megaPool!,
-			megaPoolTokenMint: state.registry.megaPoolTokenMint!,
-		};
+      network: state.common.network,
+      pool: state.registry.pool!,
+      poolTokenMint: state.registry.poolTokenMint!,
+      megaPool: state.registry.megaPool!,
+      megaPoolTokenMint: state.registry.megaPoolTokenMint!,
+    };
   });
 
   // Locked reward state.
   const [lockedRewardAmount, setLockedRewardAmount] = useState<null | number>(
     null,
   );
-  const [expiryTs, setExpiryTs] = useState<null | number>(
-    null,
+  const [expiryTs, setExpiryTs] = useState<null | number>(null);
+  const [expiryReceiver, setExpiryReceiver] = useState(
+    registryClient.provider.wallet.publicKey.toString(),
   );
-	const [expiryReceiver, setExpiryReceiver] = useState(registryClient.provider.wallet.publicKey.toString());
   const [depositor, setDepositor] = useState<null | PublicKey>(null);
-	const [mintLabel, setMintLabel] = useState('srm');
+  const [mintLabel, setMintLabel] = useState('srm');
   const [mint, setMint] = useState<null | PublicKey>(network.srm);
-	const [periodCount, setPeriodCount] = useState(7);
+  const [periodCount, setPeriodCount] = useState(7);
 
-  const isSendEnabled = mint !== null
-										 && depositor !== null
-										 && lockedRewardAmount !== null
-										 && expiryTs !== null;
+  const isSendEnabled =
+    mint !== null &&
+    depositor !== null &&
+    lockedRewardAmount !== null &&
+    expiryTs !== null;
 
   const sendLockedRewards = async () => {
-		await notification.withTx(snack, 'Dropping locked reward...', 'Locked reward dropped', async () => {
-			let { tx } = await registryClient.dropLockedReward({
-				total: new BN(lockedRewardAmount as number),
-				expiryTs: new BN(expiryTs as number),
-				expiryReceiver: new PublicKey(expiryReceiver as string),
-				depositor: depositor as PublicKey,
-				depositorMint: mint as PublicKey,
-				pool: (poolTab === PoolTabViewModel.Srm) ? pool.publicKey : megaPool.publicKey,
-				poolTokenMint: (poolTab === PoolTabViewModel.Srm) ? poolTokenMint.publicKey : megaPoolTokenMint.publicKey,
-				periodCount: new BN(periodCount),
-			});
-			return tx;
-		});
+    await notification.withTx(
+      snack,
+      'Dropping locked reward...',
+      'Locked reward dropped',
+      async () => {
+        let { tx } = await registryClient.dropLockedReward({
+          total: new BN(lockedRewardAmount as number),
+          expiryTs: new BN(expiryTs as number),
+          expiryReceiver: new PublicKey(expiryReceiver as string),
+          depositor: depositor as PublicKey,
+          depositorMint: mint as PublicKey,
+          pool:
+            poolTab === PoolTabViewModel.Srm
+              ? pool.publicKey
+              : megaPool.publicKey,
+          poolTokenMint:
+            poolTab === PoolTabViewModel.Srm
+              ? poolTokenMint.publicKey
+              : megaPoolTokenMint.publicKey,
+          periodCount: new BN(periodCount),
+        });
+        return tx;
+      },
+    );
     onClose();
   };
 
@@ -182,44 +200,42 @@ function DropLockedForm(props: DropUnlockedFormProps) {
               InputProps={{ inputProps: { min: 0 } }}
             />
           </div>
-    </div>
-    <TextField
-    style={{ marginTop: '37px', width: '100%' }}
-    label="Expiry Receiver"
-    variant="outlined"
-		value={expiryReceiver}
-    onChange={e => setExpiryReceiver(e.target.value as string)}
-    />
-		<div style={{ display: 'flex' }}>
+        </div>
         <TextField
-          style={{ marginTop: '10px' }}
-          fullWidth
-          label="Expiry date"
-          type="date"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          onChange={e => {
-            const d = new Date(e.target.value);
-            setExpiryTs(d.getTime() / 1000);
-          }}
+          style={{ marginTop: '37px', width: '100%' }}
+          label="Expiry Receiver"
+          variant="outlined"
+          value={expiryReceiver}
+          onChange={e => setExpiryReceiver(e.target.value as string)}
         />
-            <TextField
-              style={{ marginLeft: '10px', marginTop: '10px' }}
-              id="outlined-number"
-              label="Period Count"
-              type="number"
-              InputLabelProps={{
-                shrink: true,
-              }}
-              variant="outlined"
-						value={periodCount}
-              onChange={e =>
-                setPeriodCount(parseInt(e.target.value) as number)
-              }
-              InputProps={{ inputProps: { min: 1 } }}
-            />
-		</div>
+        <div style={{ display: 'flex' }}>
+          <TextField
+            style={{ marginTop: '10px' }}
+            fullWidth
+            label="Expiry date"
+            type="date"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            onChange={e => {
+              const d = new Date(e.target.value);
+              setExpiryTs(d.getTime() / 1000);
+            }}
+          />
+          <TextField
+            style={{ marginLeft: '10px', marginTop: '10px' }}
+            id="outlined-number"
+            label="Period Count"
+            type="number"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            variant="outlined"
+            value={periodCount}
+            onChange={e => setPeriodCount(parseInt(e.target.value) as number)}
+            InputProps={{ inputProps: { min: 1 } }}
+          />
+        </div>
       </div>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>

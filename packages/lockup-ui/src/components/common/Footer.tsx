@@ -203,37 +203,45 @@ function NetworkEnvironment() {
       >
         Registrar
       </Typography>
-			{registrar && safe && (
-				<>
-      <ul>
-        <li>Authority: {registrar.account.authority.toString()}</li>
-        <li>
-          Max stake per entity: {registrar.account.maxStakePerEntity.toString()}
-        </li>
-        <li>
-          Withdrawal timelocK: {registrar.account.withdrawalTimelock.toString()}
-        </li>
-        <li>
-          Deactivation timelock:{' '}
-          {registrar.account.deactivationTimelock.toString()}
-        </li>
-        <li>Vault: {registrar.account.vault.toString()}</li>
-        <li>Mega vault: {registrar.account.megaVault.toString()}</li>
-        <li>Pool: {registrar.account.pool.toString()}</li>
-        <li>Mega pool: {registrar.account.megaPool.toString()}</li>
-        <li>Pool program id: {registrar.account.poolProgramId.toString()}</li>
-      </ul>
-      <Typography
-        style={{ paddingLeft: '10px', fontSize: '14px', fontWeight: 'bold' }}
-      >
-        Safe
-      </Typography>
-      <ul>
-        <li>Authority: {safe.account.authority.toString()}</li>
-        <li>Whitelist: {safe.account.whitelist.toString()}</li>
-      </ul>
-				</>
-			)}
+      {registrar && safe && (
+        <>
+          <ul>
+            <li>Authority: {registrar.account.authority.toString()}</li>
+            <li>
+              Max stake per entity:{' '}
+              {registrar.account.maxStakePerEntity.toString()}
+            </li>
+            <li>
+              Withdrawal timelocK:{' '}
+              {registrar.account.withdrawalTimelock.toString()}
+            </li>
+            <li>
+              Deactivation timelock:{' '}
+              {registrar.account.deactivationTimelock.toString()}
+            </li>
+            <li>Vault: {registrar.account.vault.toString()}</li>
+            <li>Mega vault: {registrar.account.megaVault.toString()}</li>
+            <li>Pool: {registrar.account.pool.toString()}</li>
+            <li>Mega pool: {registrar.account.megaPool.toString()}</li>
+            <li>
+              Pool program id: {registrar.account.poolProgramId.toString()}
+            </li>
+          </ul>
+          <Typography
+            style={{
+              paddingLeft: '10px',
+              fontSize: '14px',
+              fontWeight: 'bold',
+            }}
+          >
+            Safe
+          </Typography>
+          <ul>
+            <li>Authority: {safe.account.authority.toString()}</li>
+            <li>Whitelist: {safe.account.whitelist.toString()}</li>
+          </ul>
+        </>
+      )}
     </div>
   );
 }

@@ -16,6 +16,7 @@ import { accounts } from '@project-serum/lockup';
 import { Network } from '@project-serum/common';
 import { useWallet } from '../../components/common/WalletProvider';
 import { ProgramAccount, State as StoreState } from '../../store/reducer';
+import NewVestingButton from './NewVesting';
 
 export default function Vestings() {
   const { wallet } = useWallet();
@@ -59,14 +60,7 @@ export default function Vestings() {
               </Typography>
             </div>
             <div>
-              <RouterLink
-                to={'/lockup/vesting/new'}
-                style={{ color: 'inherit', textDecoration: 'none' }}
-              >
-                <Button variant="contained" color="secondary">
-                  New
-                </Button>
-              </RouterLink>
+              <NewVestingButton />
             </div>
           </div>
         )}

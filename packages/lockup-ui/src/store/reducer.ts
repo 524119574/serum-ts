@@ -47,6 +47,8 @@ export default function reducer(
     case ActionType.CommonSetNetwork:
       if (newState.common.network.label !== action.item.network.label) {
         newState.common.network = action.item.network;
+        newState.common.bootstrapState = BootstrapState.NeedsBootstrap;
+        newState.common.shutdownTrigger = true;
       }
       return newState;
     case ActionType.CommonTriggerBootstrap:
@@ -54,8 +56,16 @@ export default function reducer(
       newState.common.bootstrapTrigger = true;
       return newState;
     case ActionType.CommonTriggerShutdown:
+      newState.common.bootstrapState = BootstrapState.NeedsBootstrap;
       newState.common.shutdownTrigger = true;
       return newState;
+    case ActionType.CommonDidShutdown:
+      // Reset everything except network.
+      let s = {
+        ...initialState,
+      };
+      s.common.network = newState.common.network;
+      return s;
     case ActionType.CommonOwnedTokenAccountsSet:
       newState.common.ownedTokenAccounts = action.item.ownedTokenAccounts;
       return newState;

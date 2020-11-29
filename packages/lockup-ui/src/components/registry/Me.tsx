@@ -735,12 +735,12 @@ export class PoolPrices {
       return { quantities: [new u64(0), new u64(sptAmount)] };
     }
     const quantities = this.megaPoolVaults.map((v, idx) => {
-			if (v.amount.toNumber() === 0) {
-				if (idx === 1) {
-					throw new Error('invariant violation');
-				}
-				return new BN(0);
-			}
+      if (v.amount.toNumber() === 0) {
+        if (idx === 1) {
+          throw new Error('invariant violation');
+        }
+        return new BN(0);
+      }
       return v.amount
         .mul(sptAmount)
         .add(roundUp ? this.megaPoolTokenMint.supply.sub(new BN(1)) : new BN(0))

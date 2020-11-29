@@ -287,13 +287,22 @@ export default function BootstrapProvider(props: PropsWithChildren<ReactNode>) {
   ]);
 
   const shutdown = useCallback(() => {
-    if (_slotChangeListener !== -1) {
-      lockupClient.provider.connection.removeSlotChangeListener(
-        _slotChangeListener,
-      );
-      _slotChangeListener = -1;
-    }
-    registryClient.accounts.rewardEventQueueDisconnect();
+		wallet.disconnect();
+		try {
+			if (_slotChangeListener !== -1) {
+				lockupClient.provider.connection.removeSlotChangeListener(
+					_slotChangeListener,
+				).catch(console.error);
+				_slotChangeListener = -1;
+			}
+			registryClient.accounts.rewardEventQueueDisconnect();
+		} catch(err) {
+			console.error('Error disconnecting listeners', err);
+		}
+		dispatch({
+			type: ActionType.CommonDidShutdown,
+			item: {},
+		});
   }, [lockupClient.provider.connection]);
 
   useEffect(() => {

@@ -9,8 +9,6 @@ import { store } from './store';
 import WalletProvider from './components/common/WalletProvider';
 import BootstrapProvider from './components/common/BootstrapProvider';
 import Layout from './components/common/Layout';
-import NewVestingPage from './pages/lockup/NewVesting';
-import VestingsPage from './pages/lockup/Vestings';
 import StakePage from './pages/registry/Stake';
 
 function App() {
@@ -35,13 +33,6 @@ function App() {
               <HashRouter basename={'/'}>
                 <Layout>
                   <Route exact path="/" component={StakePage} />
-                  <Route exact path="/registry/pool" component={StakePage} />
-                  <Route exact path="/lockup" component={VestingsPage} />
-                  <Route
-                    exact
-                    path="/lockup/vesting/new"
-                    component={NewVestingPage}
-                  />
                 </Layout>
               </HashRouter>
             </BootstrapProvider>

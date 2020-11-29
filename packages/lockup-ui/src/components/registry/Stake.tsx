@@ -31,11 +31,13 @@ import { ActionType } from '../../store/actions';
 import EntityGallery, { EntityActivityLabel } from './nodes/EntityGallery';
 import Me from './Me';
 import Rewards from './rewards/Rewards';
+import Vestings from '../lockup/Vestings';
 
 enum TabModel {
   Me,
   EntityGallery,
   Rewards,
+  Lockup,
 }
 
 export default function Stake() {
@@ -47,6 +49,7 @@ export default function Stake() {
         {tab === TabModel.Me && <Me />}
         {tab === TabModel.EntityGallery && <EntityGallery />}
         {tab === TabModel.Rewards && <Rewards />}
+        {tab === TabModel.Lockup && <Vestings />}
       </Container>
     </div>
   );
@@ -186,6 +189,7 @@ function MyNodeBanner(props: MyNodeBannerProps) {
             <Tab value={TabModel.Me} label="Me" />
             <Tab value={TabModel.EntityGallery} label="Nodes" />
             <Tab value={TabModel.Rewards} label="Rewards" />
+            <Tab value={TabModel.Lockup} label="Lockups" />
           </Tabs>
         </div>
       </div>

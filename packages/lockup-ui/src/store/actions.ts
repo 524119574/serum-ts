@@ -9,6 +9,7 @@ export enum ActionType {
   CommonAppWillBootstrap,
   CommonAppDidBootstrap,
   CommonTriggerShutdown,
+  CommonDidShutdown,
   CommonWalletDidConnect,
   CommonWalletDidDisconnect,
   CommonWalletSetProvider,

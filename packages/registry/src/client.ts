@@ -1798,9 +1798,11 @@ class Accounts {
     return ee;
   }
 
-  rewardEventQueueDisconnect(): void {
+  rewardEventQueueDisconnect() {
     if (REWARD_Q_LISTENER !== -1) {
-      this.provider.connection.removeAccountChangeListener(REWARD_Q_LISTENER);
+      this.provider.connection
+        .removeAccountChangeListener(REWARD_Q_LISTENER)
+        .catch(console.error);
     }
   }
 
