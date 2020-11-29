@@ -182,7 +182,11 @@ export default function reducer(
     case ActionType.RegistrySetRewardEventQueue:
       newState.registry.rewardEventQueue = action.item.rewardEventQueue;
       return newState;
-
+    case ActionType.RegistryCreateRewardVendor:
+      const vendors = new Map(newState.registry.vendors);
+      vendors.set(action.item.vendor.publicKey.toString(), action.item.vendor);
+      newState.registry.vendors = vendors;
+      return newState;
     // Misc.
     default:
       return newState;
@@ -230,6 +234,7 @@ export type RegistryState = {
     Array<ProgramAccount<registry.accounts.PendingWithdrawal>>
   >;
   rewardEventQueue?: ProgramAccount<registry.accounts.RewardEventQueue>;
+  vendors: Map<string, ProgramAccount<registry.accounts.LockedRewardVendor>>;
 };
 
 export type SolanaState = {
@@ -254,6 +259,7 @@ export const initialState: State = {
     entities: [],
     entityMetadata: new Map(),
     pendingWithdrawals: new Map(),
+    vendors: new Map(),
   },
 };
 

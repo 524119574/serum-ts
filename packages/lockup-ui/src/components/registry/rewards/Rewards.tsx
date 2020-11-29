@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import BN from 'bn.js';
 import { useSnackbar } from 'notistack';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import LockIcon from '@material-ui/icons/Lock';
@@ -18,39 +19,80 @@ import { useWallet } from '../../../components/common/WalletProvider';
 import { State as StoreState } from '../../../store/reducer';
 import DropRewardDialog from './DropRewardDialog';
 import * as notification from '../../common/Notification';
+import { ActionType } from '../../../store/actions';
 
 export default function Rewards() {
   const { registryClient } = useWallet();
+  const dispatch = useDispatch();
   const snack = useSnackbar();
-  const { rewardEventQueue, member, network } = useSelector(
+  const { rewardEventQueue, member, network, vendors, pool } = useSelector(
     (state: StoreState) => {
       return {
         rewardEventQueue: state.registry.rewardEventQueue,
         member: state.registry.member!,
         network: state.common.network,
+        pool: state.registry.pool!,
+        vendors: state.registry.vendors,
       };
     },
   );
-  let tailCursor = rewardEventQueue!.account.tailCursor();
+
+  // Fetch all the reward vendor accounts that we haven't loaded, already.
+  useEffect(() => {
+    rewardEventQueue!.account.messages().forEach(m => {
+      if (m.lockedAlloc !== undefined) {
+        if (vendors.get(m.lockedAlloc.lockedVendor.toString()) === undefined) {
+          registryClient.accounts
+            .lockedRewardVendor(m.lockedAlloc.lockedVendor)
+            .then(vendor =>
+              dispatch({
+                type: ActionType.RegistryCreateRewardVendor,
+                item: {
+                  vendor,
+                },
+              }),
+            );
+        }
+      }
+    });
+  });
+
+  // All rewards to display.
   const rewards = rewardEventQueue!.account
     .messages()
     .map((m, idx) => {
-      let cursor = tailCursor + idx;
+      let cursor = rewardEventQueue!.account.tailCursor() + idx;
+      let needsClaim = false;
+			let vendor = undefined;
+      if (m.lockedAlloc !== undefined) {
+        vendor = vendors.get(m.lockedAlloc.lockedVendor.toString());
+        if (vendor !== undefined) {
+          // The member must own shares of the reward's target pool.
+          const ownsPoolShares = m.lockedAlloc.pool.equals(pool.publicKey)
+            ? member.account.balances.sptAmount.cmp(new BN(0)) === 1
+            : member.account.balances.sptMegaAmount.cmp(new BN(0)) === 1;
+          const notYetClaimed = cursor >= member.account.rewardsCursor;
+          const isEligible =
+            member.account.lastStakeTs < vendor.account.startTs;
+
+          needsClaim = ownsPoolShares && notYetClaimed && isEligible;
+        }
+      }
       return {
-        item: m,
-        needsClaim:
-          m.lockedAlloc !== undefined && cursor >= member.account.rewardsCursor,
+        reward: m,
         cursor,
+        needsClaim,
+				vendor,
       };
     })
     .reverse();
-  let showClaimButton = rewards.filter(r => r.needsClaim).length > 0;
-  const claimNextReward = async () => {
-    // The reward with min cursor that needs claim.
+
+  // On click.
+  const claimBtnClickHandler = async () => {
     let r = (() => {
-      for (let k = rewards.length - 1; k >= 0; k -= 1) {
-        let r = rewards[k];
-        if (r.item.lockedAlloc && r.needsClaim) {
+      for (let k = rewards!.length - 1; k >= 0; k -= 1) {
+        let r = rewards![k];
+        if (r.needsClaim) {
           return r;
         }
       }
@@ -58,7 +100,7 @@ export default function Rewards() {
     })();
 
     let vendor = await registryClient.accounts.lockedRewardVendor(
-      r.item.lockedAlloc!.lockedVendor,
+      r.reward.lockedAlloc!.lockedVendor,
     );
     let vendorSigner = await registryClient.accounts.lockedRewardVendorAuthority(
       vendor.publicKey,
@@ -77,7 +119,7 @@ export default function Rewards() {
           vendorSigner,
           safe: network.safe,
           lockupProgramId: network.lockupProgramId,
-          mint: r.item.lockedAlloc!.mint,
+          mint: r.reward.lockedAlloc!.mint,
         });
         return tx;
       },
@@ -97,7 +139,9 @@ export default function Rewards() {
           Reward History
         </Typography>
         <div style={{ display: 'flex' }}>
-          {showClaimButton && <ClaimButton onClick={claimNextReward} />}
+          {rewards.filter(r => r.needsClaim).length > 0 && (
+            <ClaimButton onClick={claimBtnClickHandler} />
+          )}
           <DropButton />
         </div>
       </div>
@@ -107,10 +151,11 @@ export default function Rewards() {
             rewards.map(r => {
               return (
                 <RewardListItem
+                  network={network}
+                  reward={r.reward}
                   cursor={r.cursor}
                   needsClaim={r.needsClaim}
-                  network={network}
-                  reward={r.item}
+								  vendor={r.vendor}
                 />
               );
             })
@@ -158,13 +203,14 @@ function DropButton() {
 
 type RewardListItemProps = {
   reward: registry.accounts.RewardEvent;
-  needsClaim: boolean;
   cursor: number;
   network: Network;
+  needsClaim: boolean;
+	vendor?: ProgramAccount<registry.accounts.LockedRewardVendor>;
 };
 
 function RewardListItem(props: RewardListItemProps) {
-  const { reward, network, needsClaim, cursor } = props;
+  const { reward, network, needsClaim, cursor, vendor } = props;
   if (reward.poolDrop !== undefined) {
     return <PoolDropReward cursor={cursor} poolDrop={reward.poolDrop} />;
   } else {
@@ -174,6 +220,7 @@ function RewardListItem(props: RewardListItemProps) {
         needsClaim={needsClaim}
         lockedAlloc={reward.lockedAlloc!}
         network={network}
+			  vendor={vendor}
       />
     );
   }
@@ -211,16 +258,12 @@ type LockedRewardProps = {
   network: Network;
   needsClaim: boolean;
   cursor: number;
+	vendor?: ProgramAccount<registry.accounts.LockedRewardVendor>;
 };
 
 function LockedReward(props: LockedRewardProps) {
-  const { cursor, lockedAlloc, network, needsClaim } = props;
-  const { registryClient } = useWallet();
+  const { vendor, cursor, lockedAlloc, network, needsClaim } = props;
   const [open, setOpen] = useState(false);
-  let [
-    vendor,
-    setVendor,
-  ] = useState<null | registry.accounts.LockedRewardVendor>(null);
   let amountLabel = `${lockedAlloc.total.toString()}`;
   if (lockedAlloc.mint.equals(network.srm)) {
     amountLabel += ' SRM';
@@ -236,17 +279,13 @@ function LockedReward(props: LockedRewardProps) {
     <>
       <ListItem
         button
-        onClick={async () => {
-          if (vendor === null) {
-            let v = await registryClient.accounts.lockedRewardVendor(
-              lockedAlloc.lockedVendor,
-            );
-            setVendor(v.account);
-          }
-          setOpen(open => !open);
-        }}
+        onClick={() => setOpen(open => !open)}
       >
-        <LockIcon style={{ marginRight: '16px' }} />
+        {needsClaim === null ? (
+          <CircularProgress style={{ marginRight: '16px' }} />
+        ) : (
+          <LockIcon style={{ marginRight: '16px' }} />
+        )}
         <ListItemText
           primary={
             <div
@@ -264,12 +303,10 @@ function LockedReward(props: LockedRewardProps) {
         {open ? <ExpandLess /> : <ExpandMore />}
       </ListItem>
       <Collapse in={open} timeout="auto" unmountOnExit>
-        {vendor === null ? (
+        {vendor === undefined ? (
           <CircularProgress />
         ) : (
-          <LockedRewardDetails
-            vendor={{ publicKey: lockedAlloc.lockedVendor, account: vendor }}
-          />
+          <LockedRewardDetails vendor={vendor} />
         )}
       </Collapse>
     </>

@@ -24,14 +24,14 @@ import OwnedTokenAccountsSelect from '../../components/common/OwnedTokenAccounts
 export default function NewVestingButton() {
   const [open, setOpen] = useState(false);
   return (
-		<>
-    <div onClick={() => setOpen(true)}>
-      <Button variant="contained" color="secondary">
-        New
-      </Button>
-    </div>
-		<NewVestingDialog open={open} onClose={() => setOpen(false)} />
-		</>
+    <>
+      <div onClick={() => setOpen(true)}>
+        <Button variant="contained" color="secondary">
+          New
+        </Button>
+      </div>
+      <NewVestingDialog open={open} onClose={() => setOpen(false)} />
+    </>
   );
 }
 

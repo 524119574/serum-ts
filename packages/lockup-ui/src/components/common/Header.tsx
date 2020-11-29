@@ -133,7 +133,7 @@ function NetworkSelector() {
     return state.common.network;
   });
   const dispatch = useDispatch();
-	const { wallet } = useWallet();
+  const { wallet } = useWallet();
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleClose = () => {

@@ -38,4 +38,5 @@ export enum ActionType {
   RegistrySetPendingWithdrawals,
   RegistryCreatePendingWithdrawal,
   RegistryUpdatePendingWithdrawal,
+  RegistryCreateRewardVendor,
 }
