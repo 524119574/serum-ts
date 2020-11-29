@@ -1,6 +1,5 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { useSnackbar } from 'notistack';
 import Button from '@material-ui/core/Button';
 import { TransactionSignature } from '@solana/web3.js';
 import { State as StoreState } from '../../store/reducer';

@@ -172,8 +172,8 @@ function NetworkEnvironment() {
   let { network, registrar, safe } = useSelector((state: StoreState) => {
     return {
       network: state.common.network,
-      registrar: state.registry.registrar!,
-      safe: state.lockup.safe!,
+      registrar: state.registry.registrar,
+      safe: state.lockup.safe,
     };
   });
   return (
@@ -203,6 +203,8 @@ function NetworkEnvironment() {
       >
         Registrar
       </Typography>
+			{registrar && safe && (
+				<>
       <ul>
         <li>Authority: {registrar.account.authority.toString()}</li>
         <li>
@@ -230,6 +232,8 @@ function NetworkEnvironment() {
         <li>Authority: {safe.account.authority.toString()}</li>
         <li>Whitelist: {safe.account.whitelist.toString()}</li>
       </ul>
+				</>
+			)}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { u8, struct, Layout } from 'buffer-layout';
+import { Layout } from 'buffer-layout';
 import {
   vec,
   option,
@@ -6,6 +6,9 @@ import {
   publicKey,
   rustEnum,
   u64,
+  u32,
+  struct,
+  u8,
 } from '@project-serum/borsh';
 import { PublicKey } from '@solana/web3.js';
 import BN from 'bn.js';
@@ -96,11 +99,14 @@ type DropLockedReward = {
   total: BN;
   expiryTs: BN;
   expiryReceiver: PublicKey;
+  periodCount: BN;
   nonce: number;
 };
 
 type ClaimLockedReward = {
-  cursor: BN;
+  cursor: number;
+  // Nonce for the vesting account to be created.
+  nonce: number;
 };
 
 const REGISTRY_INSTRUCTION_LAYOUT: Layout<RegistryInstruction> = rustEnum([
@@ -142,10 +148,16 @@ const REGISTRY_INSTRUCTION_LAYOUT: Layout<RegistryInstruction> = rustEnum([
   struct([u64('amount')], 'slash'),
   struct([vec(u64(), 'totals')], 'dropPoolReward'),
   struct(
-    [u64('total'), i64('expiryTs'), publicKey('expiryReceiver'), u8('nonce')],
+    [
+      u64('total'),
+      i64('expiryTs'),
+      publicKey('expiryReceiver'),
+      u64('periodCount'),
+      u8('nonce'),
+    ],
     'dropLockedReward',
   ),
-  struct([u64('cursor')], 'claimLockedReward'),
+  struct([u32('cursor'), u8('nonce')], 'claimLockedReward'),
 ]);
 
 export function decode(data: Buffer): RegistryInstruction {

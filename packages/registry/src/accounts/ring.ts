@@ -40,12 +40,20 @@ export class Ring<T> {
   }
 
   head(): number {
+    return this.headCursor() % this.capacity;
+  }
+
+  headCursor(): number {
     let bytes = this.data.slice(HEAD_START, HEAD_START + 4);
-    return u32().decode(bytes) % this.capacity;
+    return u32().decode(bytes);
   }
 
   tail(): number {
+    return this.tailCursor() % this.capacity;
+  }
+
+  tailCursor(): number {
     let bytes = this.data.slice(TAIL_START, TAIL_START + 4);
-    return u32().decode(bytes) % this.capacity;
+    return u32().decode(bytes);
   }
 }

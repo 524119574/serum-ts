@@ -731,10 +731,16 @@ export class PoolPrices {
     if (this.megaPoolVaults.length !== 2) {
       throw new Error('invariant violation');
     }
-    if (this.poolTokenMint.supply.toNumber() === 0) {
+    if (this.megaPoolTokenMint.supply.toNumber() === 0) {
       return { quantities: [new u64(0), new u64(sptAmount)] };
     }
-    const quantities = this.megaPoolVaults.map(v => {
+    const quantities = this.megaPoolVaults.map((v, idx) => {
+			if (v.amount.toNumber() === 0) {
+				if (idx === 1) {
+					throw new Error('invariant violation');
+				}
+				return new BN(0);
+			}
       return v.amount
         .mul(sptAmount)
         .add(roundUp ? this.megaPoolTokenMint.supply.sub(new BN(1)) : new BN(0))

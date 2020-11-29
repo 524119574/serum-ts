@@ -122,6 +122,26 @@ export default class Client {
     });
   }
 
+  static localhost(wallet?: Wallet, opts?: SendOptions): Client {
+    if (wallet === undefined) {
+      wallet = NodeWallet.local();
+    }
+    opts = opts || Provider.defaultOptions();
+    const connection = new Connection(
+      'http://localhost:8899',
+      opts.preflightCommitment,
+    );
+    const provider = new Provider(connection, wallet, opts);
+    return new Client({
+      provider,
+      programId: networks.localhost.registryProgramId,
+      stakeProgramId: networks.localhost.stakeProgramId,
+      registrar: networks.localhost.registrar,
+      metaEntityProgramId: networks.localhost.metaEntityProgramId,
+      rewardEventQueue: networks.localhost.rewardEventQueue,
+    });
+  }
+
   // Initializes both the registry and its associated staking pool.
   static async initialize(
     provider: Provider,
@@ -1224,6 +1244,7 @@ export default class Client {
       depositorMint,
       pool,
       poolTokenMint,
+      periodCount,
     } = req;
     const lockedVendor = new Account();
     const lockedVendorVault = new Account();
@@ -1284,6 +1305,7 @@ export default class Client {
             total,
             expiryTs,
             expiryReceiver,
+            periodCount,
             nonce,
           },
         }),
@@ -1330,7 +1352,6 @@ export default class Client {
         keys: [
           { pubkey: member, isWritable: true, isSigner: false },
           { pubkey: this.registrar, isWritable: false, isSigner: false },
-          { pubkey: this.rewardEventQueue, isWritable: false, isSigner: false },
           { pubkey: vendor, isWritable: false, isSigner: false },
           { pubkey: vendorVault, isWritable: true, isSigner: false },
           { pubkey: vendorSigner, isWritable: false, isSigner: false },
@@ -1352,7 +1373,7 @@ export default class Client {
       }),
     );
 
-    let signers: any = [];
+    let signers: any = [vesting, vestingVault];
     let txSig = await this.provider.send(tx, signers);
     return {
       tx: txSig,
@@ -1843,6 +1864,20 @@ class Accounts {
       account: accounts.lockedRewardVendor.decode(accountInfo.data),
     };
   }
+
+  lockedRewardVendorAuthority(
+    lockedVendor: PublicKey,
+    nonce: number,
+  ): Promise<PublicKey> {
+    return PublicKey.createProgramAddress(
+      [
+        this.registrarAddress.toBuffer(),
+        lockedVendor.toBuffer(),
+        Buffer.from([nonce]),
+      ],
+      this.programId,
+    );
+  }
 }
 
 type InitializeRequest = {
@@ -2055,6 +2090,7 @@ type DropLockedRewardRequest = {
   depositorMint: PublicKey;
   pool: PublicKey;
   poolTokenMint: PublicKey;
+  periodCount: BN;
 };
 
 type DropLockedRewardResponse = {
@@ -2062,7 +2098,7 @@ type DropLockedRewardResponse = {
 };
 
 type ClaimLockedRewardRequest = {
-  cursor: BN;
+  cursor: number;
   member: PublicKey;
   vendor: PublicKey;
   vendorVault: PublicKey;

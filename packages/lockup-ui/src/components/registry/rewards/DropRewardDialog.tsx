@@ -106,6 +106,7 @@ function DropLockedForm(props: DropUnlockedFormProps) {
   const [depositor, setDepositor] = useState<null | PublicKey>(null);
 	const [mintLabel, setMintLabel] = useState('srm');
   const [mint, setMint] = useState<null | PublicKey>(network.srm);
+	const [periodCount, setPeriodCount] = useState(7);
 
   const isSendEnabled = mint !== null
 										 && depositor !== null
@@ -122,6 +123,7 @@ function DropLockedForm(props: DropUnlockedFormProps) {
 				depositorMint: mint as PublicKey,
 				pool: (poolTab === PoolTabViewModel.Srm) ? pool.publicKey : megaPool.publicKey,
 				poolTokenMint: (poolTab === PoolTabViewModel.Srm) ? poolTokenMint.publicKey : megaPoolTokenMint.publicKey,
+				periodCount: new BN(periodCount),
 			});
 			return tx;
 		});
@@ -188,6 +190,7 @@ function DropLockedForm(props: DropUnlockedFormProps) {
 		value={expiryReceiver}
     onChange={e => setExpiryReceiver(e.target.value as string)}
     />
+		<div style={{ display: 'flex' }}>
         <TextField
           style={{ marginTop: '10px' }}
           fullWidth
@@ -201,6 +204,22 @@ function DropLockedForm(props: DropUnlockedFormProps) {
             setExpiryTs(d.getTime() / 1000);
           }}
         />
+            <TextField
+              style={{ marginLeft: '10px', marginTop: '10px' }}
+              id="outlined-number"
+              label="Period Count"
+              type="number"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              variant="outlined"
+						value={periodCount}
+              onChange={e =>
+                setPeriodCount(parseInt(e.target.value) as number)
+              }
+              InputProps={{ inputProps: { min: 1 } }}
+            />
+		</div>
       </div>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
