@@ -35,7 +35,6 @@ export default function Rewards() {
   const rewards = rewardEventQueue!
 		.account
 		.messages()
-		.reverse()
 		.map((m, idx) => {
 			let cursor = tailCursor + idx;
 			let needsClaim = cursor >= member.account.rewardsCursor;
@@ -43,8 +42,8 @@ export default function Rewards() {
 				showClaimButton = true;
 			}
 			return { item: m, needsClaim, cursor }
-		});
-
+		})
+		.reverse();
 	const claimNextReward = async () => {
 		// The reward with min cursor that needs claim.
 		let r = (() => {
