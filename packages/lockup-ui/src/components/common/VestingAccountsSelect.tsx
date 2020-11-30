@@ -4,9 +4,9 @@ import BN from 'bn.js';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import { PublicKey } from '@solana/web3.js';
-import { State as StoreState } from '../../store/reducer';
 import * as lockup from '@project-serum/lockup';
 import { ProgramAccount } from '@project-serum/common';
+import { State as StoreState } from '../../store/reducer';
 
 type Props = {
   style?: any;

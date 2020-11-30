@@ -15,11 +15,11 @@ import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import * as registry from '@project-serum/registry';
 import { Network, ProgramAccount } from '@project-serum/common';
-import { useWallet } from '../../../components/common/WalletProvider';
-import { State as StoreState } from '../../../store/reducer';
+import { useWallet } from '../../components/common/WalletProvider';
+import { State as StoreState } from '../../store/reducer';
 import DropRewardDialog from './DropRewardDialog';
-import * as notification from '../../common/Notification';
-import { ActionType } from '../../../store/actions';
+import * as notification from '../common/Notification';
+import { ActionType } from '../../store/actions';
 
 export default function Rewards() {
   const { registryClient } = useWallet();

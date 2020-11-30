@@ -17,10 +17,10 @@ import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import { PublicKey } from '@solana/web3.js';
-import { useWallet } from '../../../components/common/WalletProvider';
-import OwnedTokenAccountsSelect from '../../common/OwnedTokenAccountsSelect';
-import { State as StoreState } from '../../../store/reducer';
-import * as notification from '../../common/Notification';
+import { useWallet } from '../../components/common/WalletProvider';
+import { State as StoreState } from '../../store/reducer';
+import OwnedTokenAccountsSelect from '../common/OwnedTokenAccountsSelect';
+import * as notification from '../common/Notification';
 
 enum PoolTabViewModel {
   Srm,
@@ -105,6 +105,7 @@ function DropLockedForm(props: DropUnlockedFormProps) {
   const [lockedRewardAmount, setLockedRewardAmount] = useState<null | number>(
     null,
   );
+  const [endTs, setEndTs] = useState<null | number>(null);
   const [expiryTs, setExpiryTs] = useState<null | number>(null);
   const [expiryReceiver, setExpiryReceiver] = useState(
     registryClient.provider.wallet.publicKey.toString(),
@@ -128,6 +129,7 @@ function DropLockedForm(props: DropUnlockedFormProps) {
       async () => {
         let { tx } = await registryClient.dropLockedReward({
           total: new BN(lockedRewardAmount as number),
+          endTs: new BN(endTs as number),
           expiryTs: new BN(expiryTs as number),
           expiryReceiver: new PublicKey(expiryReceiver as string),
           depositor: depositor as PublicKey,
@@ -200,6 +202,20 @@ function DropLockedForm(props: DropUnlockedFormProps) {
               InputProps={{ inputProps: { min: 0 } }}
             />
           </div>
+        </div>
+        <div style={{ marginTop: '37px' }}>
+          <TextField
+            fullWidth
+            label="End date"
+            type="datetime-local"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            onChange={e => {
+              const d = new Date(e.target.value);
+              setEndTs(d.getTime() / 1000);
+            }}
+          />
         </div>
         <TextField
           style={{ marginTop: '37px', width: '100%' }}

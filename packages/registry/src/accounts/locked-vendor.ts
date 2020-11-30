@@ -11,6 +11,7 @@ export interface LockedRewardVendor {
   poolTokenSupply: BN;
   rewardEventQueueCursor: number;
   startTs: BN;
+  endTs: BN;
   expiryTs: BN;
   expiryReceiver: PublicKey;
   total: BN;
@@ -25,6 +26,7 @@ const LOCKED_REWARD_VENDOR_LAYOUT: Layout<LockedRewardVendor> = borsh.struct([
   borsh.u64('poolTokenSupply'),
   borsh.u32('rewardEventQueueCursor'),
   borsh.i64('startTs'),
+  borsh.i64('endTs'),
   borsh.i64('expiryTs'),
   borsh.publicKey('expiryReceiver'),
   borsh.u64('total'),
@@ -50,6 +52,7 @@ export function defaultLockedRewardVendor(): LockedRewardVendor {
     poolTokenSupply: new BN(0),
     rewardEventQueueCursor: 0,
     startTs: new BN(0),
+    endTs: new BN(0),
     expiryTs: new BN(0),
     expiryReceiver: new PublicKey(Buffer.alloc(32)),
     total: new BN(0),

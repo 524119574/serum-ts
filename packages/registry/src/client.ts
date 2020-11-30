@@ -1242,6 +1242,7 @@ export default class Client {
   ): Promise<DropLockedRewardResponse> {
     let {
       total,
+      endTs,
       expiryTs,
       expiryReceiver,
       depositor,
@@ -1307,6 +1308,7 @@ export default class Client {
         data: instruction.encode({
           dropLockedReward: {
             total,
+            endTs,
             expiryTs,
             expiryReceiver,
             periodCount,
@@ -2191,6 +2193,7 @@ type DropRewardResponse = {
 
 type DropLockedRewardRequest = {
   total: BN;
+  endTs: BN;
   expiryTs: BN;
   expiryReceiver: PublicKey;
   depositor: PublicKey;

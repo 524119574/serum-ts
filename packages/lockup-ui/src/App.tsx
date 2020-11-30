@@ -9,7 +9,7 @@ import { store } from './store';
 import WalletProvider from './components/common/WalletProvider';
 import BootstrapProvider from './components/common/BootstrapProvider';
 import Layout from './components/common/Layout';
-import StakePage from './pages/registry/Stake';
+import MyNodePage from './pages/MyNode';
 
 function App() {
   const theme = createMuiTheme({
@@ -32,7 +32,7 @@ function App() {
             <BootstrapProvider>
               <HashRouter basename={'/'}>
                 <Layout>
-                  <Route exact path="/" component={StakePage} />
+                  <Route exact path="/" component={MyNodePage} />
                 </Layout>
               </HashRouter>
             </BootstrapProvider>

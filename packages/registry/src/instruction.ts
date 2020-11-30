@@ -150,6 +150,7 @@ const REGISTRY_INSTRUCTION_LAYOUT: Layout<RegistryInstruction> = rustEnum([
   struct(
     [
       u64('total'),
+      i64('endTs'),
       i64('expiryTs'),
       publicKey('expiryReceiver'),
       u64('periodCount'),

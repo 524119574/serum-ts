@@ -4,7 +4,7 @@ import { PublicKey } from '@solana/web3.js';
 import { publicKey, u64, rustEnum, vec } from '@project-serum/borsh';
 import { Ring, RingItemDecoder } from './ring';
 
-const CAPACITY = 14000;
+const CAPACITY = 14598;
 const MESSAGE_SIZE = 137;
 
 export class RewardEventQueue extends Ring<RewardEvent> {

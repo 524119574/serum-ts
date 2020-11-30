@@ -21,11 +21,11 @@ import { MintInfo, AccountInfo as TokenAccount, u64 } from '@solana/spl-token';
 import { PublicKey } from '@solana/web3.js';
 import { PoolState, Basket } from '@project-serum/pool';
 import { accounts } from '@project-serum/registry';
-import { useWallet } from '../../components/common/WalletProvider';
-import { ViewTransactionOnExplorerButton } from '../../components/common/Notification';
-import { State as StoreState, ProgramAccount } from '../../store/reducer';
-import { ActionType } from '../../store/actions';
-import * as skin from '../../skin';
+import { useWallet } from '../components/common/WalletProvider';
+import { ViewTransactionOnExplorerButton } from '../components/common/Notification';
+import { State as StoreState, ProgramAccount } from '../store/reducer';
+import { ActionType } from '../store/actions';
+import * as skin from '../skin';
 
 export default function Me() {
   const { registryClient } = useWallet();

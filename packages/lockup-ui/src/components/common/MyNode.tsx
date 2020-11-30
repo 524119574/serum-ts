@@ -26,12 +26,12 @@ import { accounts, Client } from '@project-serum/registry';
 import { useWallet } from '../../components/common/WalletProvider';
 import OwnedTokenAccountsSelect from '../../components/common/OwnedTokenAccountsSelect';
 import { ViewTransactionOnExplorerButton } from '../../components/common/Notification';
-import { State as StoreState, ProgramAccount } from '../../store/reducer';
+import { State as StoreState } from '../../store/reducer';
 import { ActionType } from '../../store/actions';
-import EntityGallery, { EntityActivityLabel } from './nodes/EntityGallery';
-import Me from './Me';
-import Rewards from './rewards/Rewards';
-import Vestings from '../lockup/Vestings';
+import EntityGallery, { EntityActivityLabel } from '../nodes/EntityGallery';
+import Me from '../Me';
+import Rewards from '../rewards/Rewards';
+import Vestings from '../lockups/Vestings';
 import VestingAccountsSelect from './VestingAccountsSelect';
 
 enum TabModel {
