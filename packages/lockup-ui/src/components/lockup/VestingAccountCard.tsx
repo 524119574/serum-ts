@@ -1,15 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ChartistGraph from 'react-chartist';
+import BN from 'bn.js';
 import { FixedScaleAxis, IChartOptions, Interpolation } from 'chartist';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
+import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Link from '@material-ui/core/Link';
 import { accounts } from '@project-serum/lockup';
 import { Network } from '@project-serum/common';
+import { PublicKey } from '@solana/web3.js';
+import { useSnackbar } from 'notistack';
 import { ProgramAccount, State as StoreState } from '../../store/reducer';
+import { useWallet } from '../common/WalletProvider';
+import OwnedTokenAccountsSelect from '../../components/common/OwnedTokenAccountsSelect';
+import { withTx } from '../../components/common/Notification';
 
 type VestingAccountCardProps = {
   network: Network;
@@ -18,10 +26,13 @@ type VestingAccountCardProps = {
 
 export default function VestingAccountCard(props: VestingAccountCardProps) {
   const { vesting, network } = props;
+  const { lockupClient } = useWallet();
 
   const currencyLabel = vesting.account.mint.equals(network.srm)
-											? 'SRM'
-											: vesting.account.mint.equals(network.msrm) ? 'MSRM' : vesting.account.mint.toString();
+    ? 'SRM'
+    : vesting.account.mint.equals(network.msrm)
+    ? 'MSRM'
+    : vesting.account.mint.toString();
 
   const startTs = vesting.account.startTs;
   const endTs = vesting.account.endTs;
@@ -65,10 +76,45 @@ export default function VestingAccountCard(props: VestingAccountCardProps) {
   const endLabel = formatDate(
     new Date(vesting.account.endTs.toNumber() * 1000),
   );
-
-	console.log('rendering vesting card');
-
   const urlSuffix = `?cluster=${network.explorerClusterSuffix}`;
+
+  const [
+    availableForWithdrawal,
+    setAvailableForWithdrawal,
+  ] = useState<null | BN>(null);
+  const [withdrawalAccount, setWithdrawalAccount] = useState<null | PublicKey>(
+    null,
+  );
+
+  useEffect(() => {
+    lockupClient.accounts
+      .availableForWithdrawal(vesting.publicKey)
+      .then(amount => {
+        setAvailableForWithdrawal(amount);
+      });
+  }, [lockupClient.accounts, vesting]);
+  const snack = useSnackbar();
+
+  const withdrawEnabled =
+    withdrawalAccount !== null &&
+    availableForWithdrawal !== null &&
+    availableForWithdrawal.gte(new BN(0));
+  const withdraw = async () => {
+    await withTx(
+      snack,
+      'Withdrawing locked tokens',
+      'Tokens unlocked',
+      async () => {
+        const { tx } = await lockupClient.redeem({
+          amount: availableForWithdrawal!,
+          vesting: vesting.publicKey,
+          tokenAccount: withdrawalAccount!,
+        });
+        return tx;
+      },
+    );
+  };
+
   return (
     <Card
       key={vesting.publicKey.toString()}
@@ -137,20 +183,47 @@ export default function VestingAccountCard(props: VestingAccountCardProps) {
           }
           type={'Line'}
         />
-			<div>
-				<Typography>
-					Initial lockup: {vesting.account.startBalance.toString()}
-				</Typography>
-				<Typography>
-					Current balance: {vesting.account.balance.toString()}
-				</Typography>
-				<Typography>
-					Whitelist owned: {vesting.account.whitelistOwned.toString()}
-				</Typography>
-				<Typography>
-					Vault: {vesting.account.vault.toString()}
-				</Typography>
-			</div>
+        <div>
+          <Typography>
+            Available for withdrawal:{' '}
+            {availableForWithdrawal === null ? (
+              <CircularProgress />
+            ) : (
+              availableForWithdrawal.toString()
+            )}
+          </Typography>
+          <Typography>
+            Current balance: {vesting.account.balance.toString()}
+          </Typography>
+          <Typography>
+            Initial lockup: {vesting.account.startBalance.toString()}
+          </Typography>
+          <Typography>
+            Whitelist owned: {vesting.account.whitelistOwned.toString()}
+          </Typography>
+          <Typography>Vault: {vesting.account.vault.toString()}</Typography>
+          <Typography>
+            Start timestamp: {vesting.account.startTs.toString()}
+          </Typography>
+          <Typography>
+            End timestamp: {vesting.account.endTs.toString()}
+          </Typography>
+          <div style={{ marginTop: '10px' }}>
+            <OwnedTokenAccountsSelect
+              mint={vesting.account.mint}
+              onChange={(f: PublicKey) => setWithdrawalAccount(f)}
+            />
+            <div style={{ marginTop: '10px' }} onClick={() => withdraw()}>
+              <Button
+                color="primary"
+                disabled={!withdrawEnabled}
+                variant="contained"
+              >
+                Withdraw
+              </Button>
+            </div>
+          </div>
+        </div>
       </CardContent>
       <div
         style={{

@@ -1,4 +1,3 @@
-import { SlotInfo } from '@solana/web3.js';
 import { AccountInfo as TokenAccount, MintInfo } from '@solana/spl-token';
 import * as lockup from '@project-serum/lockup';
 import * as registry from '@project-serum/registry';
@@ -24,7 +23,6 @@ export default function reducer(
     common: { ...state.common },
     lockup: { ...state.lockup },
     registry: { ...state.registry },
-    solana: { ...state.solana },
   };
   switch (action.type) {
     // Common.
@@ -68,11 +66,6 @@ export default function reducer(
       return s;
     case ActionType.CommonOwnedTokenAccountsSet:
       newState.common.ownedTokenAccounts = action.item.ownedTokenAccounts;
-      return newState;
-
-    // Solana.
-    case ActionType.SolanaSlotUpdate:
-      newState.solana.slotInfo = action.item.slotInfo;
       return newState;
 
     // Lockup.
@@ -197,7 +190,6 @@ export type State = {
   common: CommonState;
   lockup: LockupState;
   registry: RegistryState;
-  solana: SolanaState;
 };
 
 export type CommonState = {
@@ -237,10 +229,6 @@ export type RegistryState = {
   vendors: Map<string, ProgramAccount<registry.accounts.LockedRewardVendor>>;
 };
 
-export type SolanaState = {
-  slotInfo?: SlotInfo;
-};
-
 export const initialState: State = {
   common: {
     bootstrapTrigger: false,
@@ -251,7 +239,6 @@ export const initialState: State = {
     network: networks.devnet,
     ownedTokenAccounts: [],
   },
-  solana: {},
   lockup: {
     vestings: [],
   },

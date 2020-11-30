@@ -209,32 +209,51 @@ function DropLockedForm(props: DropUnlockedFormProps) {
           onChange={e => setExpiryReceiver(e.target.value as string)}
         />
         <div style={{ display: 'flex' }}>
-          <TextField
-            style={{ marginTop: '10px' }}
-            fullWidth
-            label="Expiry date"
-            type="date"
-            InputLabelProps={{
-              shrink: true,
+          <div
+            style={{
+              flex: 1,
+              height: '100%',
+              marginTop: '10px',
+              marginRight: '10px',
             }}
-            onChange={e => {
-              const d = new Date(e.target.value);
-              setExpiryTs(d.getTime() / 1000);
-            }}
-          />
-          <TextField
-            style={{ marginLeft: '10px', marginTop: '10px' }}
-            id="outlined-number"
-            label="Period Count"
-            type="number"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            variant="outlined"
-            value={periodCount}
-            onChange={e => setPeriodCount(parseInt(e.target.value) as number)}
-            InputProps={{ inputProps: { min: 1 } }}
-          />
+          >
+            <TextField
+              fullWidth
+              label="Expiry date"
+              type="datetime-local"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              onChange={e => {
+                const d = new Date(e.target.value);
+                setExpiryTs(d.getTime() / 1000);
+              }}
+            />
+          </div>
+          <div style={{ marginTop: '26px' }}>
+            <TextField
+              style={{ height: '100%' }}
+              disabled
+						  placeholder="Expiry Unix timestamp"
+              fullWidth
+              value={expiryTs}
+            />
+          </div>
+          <div>
+            <TextField
+              style={{ marginLeft: '10px', marginTop: '10px' }}
+              id="outlined-number"
+              label="Period Count"
+              type="number"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              variant="outlined"
+              value={periodCount}
+              onChange={e => setPeriodCount(parseInt(e.target.value) as number)}
+              InputProps={{ inputProps: { min: 1 } }}
+            />
+          </div>
         </div>
       </div>
       <DialogActions>

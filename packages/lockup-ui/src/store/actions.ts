@@ -17,9 +17,6 @@ export enum ActionType {
   CommonOwnedTokenAccountsSet,
   CommonWalletReset,
 
-  // Solana.
-  SolanaSlotUpdate,
-
   // Lockup.
   LockupSetSafe,
   LockupSetVestings,

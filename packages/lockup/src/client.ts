@@ -576,7 +576,7 @@ class Accounts {
     );
   }
 
-  async availableForWithdrawal(vesting: PublicKey): Promise<any> {
+  async availableForWithdrawal(vesting: PublicKey): Promise<BN> {
     let tx = new Transaction();
     tx.add(
       new TransactionInstruction({

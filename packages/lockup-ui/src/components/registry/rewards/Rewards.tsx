@@ -63,7 +63,7 @@ export default function Rewards() {
     .map((m, idx) => {
       let cursor = rewardEventQueue!.account.tailCursor() + idx;
       let needsClaim = false;
-			let vendor = undefined;
+      let vendor = undefined;
       if (m.lockedAlloc !== undefined) {
         vendor = vendors.get(m.lockedAlloc.lockedVendor.toString());
         if (vendor !== undefined) {
@@ -82,7 +82,7 @@ export default function Rewards() {
         reward: m,
         cursor,
         needsClaim,
-				vendor,
+        vendor,
       };
     })
     .reverse();
@@ -155,7 +155,7 @@ export default function Rewards() {
                   reward={r.reward}
                   cursor={r.cursor}
                   needsClaim={r.needsClaim}
-								  vendor={r.vendor}
+                  vendor={r.vendor}
                 />
               );
             })
@@ -206,7 +206,7 @@ type RewardListItemProps = {
   cursor: number;
   network: Network;
   needsClaim: boolean;
-	vendor?: ProgramAccount<registry.accounts.LockedRewardVendor>;
+  vendor?: ProgramAccount<registry.accounts.LockedRewardVendor>;
 };
 
 function RewardListItem(props: RewardListItemProps) {
@@ -220,7 +220,7 @@ function RewardListItem(props: RewardListItemProps) {
         needsClaim={needsClaim}
         lockedAlloc={reward.lockedAlloc!}
         network={network}
-			  vendor={vendor}
+        vendor={vendor}
       />
     );
   }
@@ -258,7 +258,7 @@ type LockedRewardProps = {
   network: Network;
   needsClaim: boolean;
   cursor: number;
-	vendor?: ProgramAccount<registry.accounts.LockedRewardVendor>;
+  vendor?: ProgramAccount<registry.accounts.LockedRewardVendor>;
 };
 
 function LockedReward(props: LockedRewardProps) {
@@ -277,10 +277,7 @@ function LockedReward(props: LockedRewardProps) {
 
   return (
     <>
-      <ListItem
-        button
-        onClick={() => setOpen(open => !open)}
-      >
+      <ListItem button onClick={() => setOpen(open => !open)}>
         {needsClaim === null ? (
           <CircularProgress style={{ marginRight: '16px' }} />
         ) : (

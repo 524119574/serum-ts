@@ -11,9 +11,6 @@ import { State as StoreState } from '../../store/reducer';
 import { ActionType } from '../../store/actions';
 import { useWallet } from './WalletProvider';
 
-// Slot change subscription ID.
-let _slotChangeListener = -1;
-
 // BootstrapProvider performs data fetching on application startup.
 export default function BootstrapProvider(props: PropsWithChildren<ReactNode>) {
   const { bootstrapTrigger, shutdownTrigger, network } = useSelector(
@@ -31,26 +28,8 @@ export default function BootstrapProvider(props: PropsWithChildren<ReactNode>) {
 
   // Entry point for bootstrapping all the data for the app.
   const bootstrap = useCallback(async () => {
-    // Clean up old subscriptions.
-    if (_slotChangeListener !== -1) {
-      await lockupClient.provider.connection.removeSlotChangeListener(
-        _slotChangeListener,
-      );
-    }
-
     // Websocket subscriptions.
     const startSubscriptions = () => {
-      // Slot subscription.
-      _slotChangeListener = lockupClient.provider.connection.onSlotChange(
-        slotInfo => {
-          dispatch({
-            type: ActionType.SolanaSlotUpdate,
-            item: {
-              slotInfo,
-            },
-          });
-        },
-      );
       // Reward event queue subscription.
       const conn = registryClient.accounts.rewardEventQueueConnect(
         registryClient.rewardEventQueue,
@@ -289,12 +268,6 @@ export default function BootstrapProvider(props: PropsWithChildren<ReactNode>) {
   const shutdown = useCallback(() => {
     wallet.disconnect();
     try {
-      if (_slotChangeListener !== -1) {
-        lockupClient.provider.connection
-          .removeSlotChangeListener(_slotChangeListener)
-          .catch(console.error);
-        _slotChangeListener = -1;
-      }
       registryClient.accounts.rewardEventQueueDisconnect();
     } catch (err) {
       console.error('Error disconnecting listeners', err);

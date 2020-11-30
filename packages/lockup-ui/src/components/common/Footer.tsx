@@ -11,23 +11,18 @@ import Messaging from './Messaging';
 export default function Footer() {
   const [chatDisplay, setChatDisplay] = useState(false);
   const [envDisplay, setEnvDisplay] = useState(false);
-  const {
-    isAppReady,
-    isDisconnected,
-    network,
-    slotInfo,
-    hasMember,
-  } = useSelector((state: StoreState) => {
-    return {
-      network: state.common.network,
-      slotInfo: state.solana.slotInfo,
-      isAppReady:
-        state.common.isWalletConnected &&
-        state.common.bootstrapState === BootstrapState.Bootstrapped,
-      isDisconnected: !state.common.isWalletConnected,
-      hasMember: state.registry.member,
-    };
-  });
+  const { isAppReady, isDisconnected, network, hasMember } = useSelector(
+    (state: StoreState) => {
+      return {
+        network: state.common.network,
+        isAppReady:
+          state.common.isWalletConnected &&
+          state.common.bootstrapState === BootstrapState.Bootstrapped,
+        isDisconnected: !state.common.isWalletConnected,
+        hasMember: state.registry.member,
+      };
+    },
+  );
   return (
     <div
       style={{
@@ -85,27 +80,6 @@ export default function Footer() {
             {network.label}
           </Typography>
         </IconButton>
-        {isAppReady && (
-          <div
-            style={{
-              marginLeft: '10px',
-              display: 'flex',
-              justifyContent: 'center',
-              flexDirection: 'column',
-            }}
-          >
-            <Typography
-              style={{
-                borderLeft: 'solid 1pt #ccc',
-                paddingLeft: '10px',
-                fontSize: '14px',
-                fontWeight: 'bold',
-              }}
-            >
-              Slot {slotInfo?.slot.toString()}
-            </Typography>
-          </div>
-        )}
       </div>
       <div style={{ display: 'flex' }}>
         {hasMember && isAppReady && (

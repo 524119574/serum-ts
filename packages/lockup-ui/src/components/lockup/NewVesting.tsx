@@ -48,7 +48,7 @@ function NewVestingDialog(props: NewVestingDialogProps) {
     };
   });
 
-  const defaultEndDate = '2027-01-01';
+  const defaultEndDate = '2027-01-01T12:00';
   const defaultEndTs = new Date(defaultEndDate).getTime() / 1000;
 
   const [beneficiary, setBeneficiary] = useState('');
@@ -175,22 +175,33 @@ function NewVestingDialog(props: NewVestingDialogProps) {
           <div
             style={{
               marginTop: '24px',
+              display: 'flex',
             }}
           >
-            <TextField
-              fullWidth
-              label="End date"
-              type="date"
-              defaultValue={defaultEndDate}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              onChange={e => {
-                const d = new Date(e.target.value);
-                setTimestamp(d.getTime() / 1000);
-              }}
-            />
-            <FormHelperText>Date when all tokens are vested</FormHelperText>
+            <div style={{ flex: 1, marginRight: '10px' }}>
+              <TextField
+                fullWidth
+                label="End date"
+                type="datetime-local"
+                defaultValue={defaultEndDate}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                onChange={e => {
+                  const d = new Date(e.target.value);
+                  setTimestamp(d.getTime() / 1000);
+                }}
+              />
+              <FormHelperText>Date when all tokens are vested</FormHelperText>
+            </div>
+            <div>
+              <TextField
+                disabled
+                fullWidth
+                label="Unix Timestamp"
+                value={timestamp}
+              />
+            </div>
           </div>
           <div
             style={{
@@ -198,27 +209,20 @@ function NewVestingDialog(props: NewVestingDialogProps) {
             }}
           >
             <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-helper-label">
-                Periods
-              </InputLabel>
-              <Select
-                fullWidth
-                labelId="demo-simple-select-helper-label"
-                id="demo-simple-select-helper"
+              <TextField
+                id="outlined-number"
+                label="Period Count"
+                type="number"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                variant="outlined"
                 value={periodCount}
-                onChange={e => setPeriodCount(e.target.value as number)}
-              >
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-                <MenuItem value={5}>5</MenuItem>
-                <MenuItem value={6}>6</MenuItem>
-                <MenuItem value={7}>7</MenuItem>
-                <MenuItem value={8}>8</MenuItem>
-                <MenuItem value={9}>9</MenuItem>
-                <MenuItem value={10}>10</MenuItem>
-              </Select>
+                onChange={e =>
+                  setPeriodCount(parseInt(e.target.value) as number)
+                }
+                InputProps={{ inputProps: { min: 1 } }}
+              />
               <FormHelperText>Number of vesting periods</FormHelperText>
             </FormControl>
           </div>
