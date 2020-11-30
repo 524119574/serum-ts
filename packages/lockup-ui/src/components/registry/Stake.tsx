@@ -197,16 +197,10 @@ function MyNodeBanner(props: MyNodeBannerProps) {
       {member !== undefined && (
         <>
           <DepositDialog
-            registrar={registrar!}
-            client={registryClient}
-            member={member}
             open={showDepositDialog}
             onClose={() => setShowDepositDialog(false)}
           />
           <WithdrawDialog
-            registrar={registrar!}
-            client={registryClient}
-            member={member}
             open={showWithdrawDialog}
             onClose={() => setShowWithdrawDialog(false)}
           />
@@ -217,42 +211,77 @@ function MyNodeBanner(props: MyNodeBannerProps) {
 }
 
 type DepositDialogProps = {
-  member: ProgramAccount<accounts.Member>;
-  registrar: ProgramAccount<accounts.Registrar>;
-  client: Client;
   open: boolean;
   onClose: () => void;
 };
 
+type Coin = 'srm' | 'lsrm' | 'msrm' | 'lmsrm';
+
 function DepositDialog(props: DepositDialogProps) {
-  const { client, registrar, member, open, onClose } = props;
+  const { open, onClose } = props;
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { registryClient, lockupClient } = useWallet();
   const dispatch = useDispatch();
+  const { safe, registrar, member } = useSelector((state: StoreState) => {
+    return {
+      registrar: state.registry.registrar!,
+      safe: state.lockup.safe!,
+      member: state.registry.member!,
+    };
+  });
   return (
     <TransferDialog
+      deposit={true}
       title={'Deposit'}
       contextText={'Select the amount and coin you want to deposit'}
       open={open}
       onClose={onClose}
-      onTransfer={async (from: PublicKey, amount: number, coin: string, isLocked: boolean) => {
+      onTransfer={async (
+        from: PublicKey,
+        amount: number,
+        coin: Coin,
+        isLocked: boolean,
+      ) => {
         enqueueSnackbar(
           `Depositing ${amount} ${coin} from ${from.toString()}`,
           {
             variant: 'info',
           },
         );
-        const { tx } = await client.deposit({
-          member: member.publicKey,
-          depositor: from,
-          amount: new BN(amount),
-          entity: member.account.entity,
-          vault:
-            coin === 'srm'
+        const tx = await (async () => {
+          let vault =
+            coin === 'srm' || coin === 'lsrm'
               ? registrar.account.vault
-              : registrar.account.megaVault,
-        });
-        const newMember = await client.accounts.member(member.publicKey);
-        const newEntity = await client.accounts.entity(member.account.entity);
+              : registrar.account.megaVault;
+          if (isLocked) {
+            const { tx } = await registryClient.depositLocked({
+              amount: new BN(amount),
+              vesting: from,
+              safe: safe.account,
+              lockupClient,
+              registrar: registrar.account,
+              entity: member.account.entity,
+              member: member.publicKey,
+              vault,
+            });
+            return tx;
+          } else {
+            const { tx } = await registryClient.deposit({
+              member: member.publicKey,
+              depositor: from,
+              amount: new BN(amount),
+              entity: member.account.entity,
+              vault,
+            });
+            return tx;
+          }
+        })();
+        const newMember = await registryClient.accounts.member(
+          member.publicKey,
+        );
+        const newEntity = await registryClient.accounts.entity(
+          member.account.entity,
+        );
         dispatch({
           type: ActionType.RegistrySetMember,
           item: {
@@ -285,36 +314,71 @@ function DepositDialog(props: DepositDialogProps) {
 type WithdrawDialogProps = DepositDialogProps;
 
 function WithdrawDialog(props: WithdrawDialogProps) {
-  const { client, registrar, member, open, onClose } = props;
+  const { open, onClose } = props;
+  const { registryClient, lockupClient } = useWallet();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const dispatch = useDispatch();
+  const { safe, registrar, member } = useSelector((state: StoreState) => {
+    return {
+      registrar: state.registry.registrar!,
+      safe: state.lockup.safe!,
+      member: state.registry.member!,
+    };
+  });
   return (
     <TransferDialog
       title={'Withdraw'}
       contextText={'Select the amount and coin you want to withdraw'}
       open={open}
       onClose={onClose}
-      onTransfer={async (from: PublicKey, amount: number, coin: string, isLocked: boolean) => {
+      onTransfer={async (
+        from: PublicKey,
+        amount: number,
+        coin: Coin,
+        isLocked: boolean,
+      ) => {
         enqueueSnackbar(`Withdrawing ${amount} ${coin} to ${from.toString()}`, {
           variant: 'info',
         });
-        const { tx } = await client.withdraw({
-          member: member.publicKey,
-          depositor: from,
-          amount: new BN(amount),
-          entity: member.account.entity,
-          vault:
-            coin === 'srm'
+        const tx = await (async () => {
+          let vault =
+            coin === 'srm' || coin === 'lsrm'
               ? registrar.account.vault
-              : registrar.account.megaVault,
-          vaultOwner: await client.accounts.vaultAuthority(
-            client.programId,
-            client.registrar,
-            registrar.account,
-          ),
-        });
-        const newMember = await client.accounts.member(member.publicKey);
-        const newEntity = await client.accounts.entity(member.account.entity);
+              : registrar.account.megaVault;
+          if (isLocked) {
+            const { tx } = await registryClient.withdrawLocked({
+              amount: new BN(amount),
+              vesting: from,
+              safe: safe.account,
+              lockupClient,
+              registrar: registrar.account,
+              entity: member.account.entity,
+              member: member.publicKey,
+              vault,
+            });
+            return tx;
+          } else {
+            const { tx } = await registryClient.withdraw({
+              member: member.publicKey,
+              depositor: from,
+              amount: new BN(amount),
+              entity: member.account.entity,
+              vault,
+              vaultOwner: await registryClient.accounts.vaultAuthority(
+                registryClient.programId,
+                registryClient.registrar,
+                registrar.account,
+              ),
+            });
+            return tx;
+          }
+        })();
+        const newMember = await registryClient.accounts.member(
+          member.publicKey,
+        );
+        const newEntity = await registryClient.accounts.entity(
+          member.account.entity,
+        );
         dispatch({
           type: ActionType.RegistrySetMember,
           item: {
@@ -348,8 +412,14 @@ type TransferDialogProps = {
   title: string;
   contextText: string;
   open: boolean;
+  deposit?: boolean;
   onClose: () => void;
-  onTransfer: (from: PublicKey, amount: number, coin: string, isLocked: boolean) => void;
+  onTransfer: (
+    from: PublicKey,
+    amount: number,
+    coin: Coin,
+    isLocked: boolean,
+  ) => void;
 };
 
 function TransferDialog(props: TransferDialogProps) {
@@ -360,14 +430,18 @@ function TransferDialog(props: TransferDialogProps) {
       msrmMint: network.msrm,
     };
   });
-  const { open, onClose, onTransfer, title, contextText } = props;
+  const { open, onClose, onTransfer, title, contextText, deposit } = props;
   const [amount, setAmount] = useState<null | number>(null);
-  const [coin, setCoin] = useState<null | string>(null);
+  const [coin, setCoin] = useState<null | Coin>(null);
   const [from, setFrom] = useState<null | PublicKey>(null);
-	const [vesting, setVesting] = useState<null | PublicKey>(null);
-  const mint = !coin ? undefined : coin === 'srm' || coin === 'lsrm' ? srmMint : msrmMint;
+  const [vesting, setVesting] = useState<null | PublicKey>(null);
+  const mint = !coin
+    ? undefined
+    : coin === 'srm' || coin === 'lsrm'
+    ? srmMint
+    : msrmMint;
 
-	const isLocked = (coin === 'lsrm' || coin === 'lmsrm');
+  const isLocked = coin === 'lsrm' || coin === 'lmsrm';
 
   return (
     <div>
@@ -404,7 +478,7 @@ function TransferDialog(props: TransferDialogProps) {
                 <InputLabel>Coin</InputLabel>
                 <Select
                   value={coin}
-                  onChange={e => setCoin(e.target.value as string)}
+                  onChange={e => setCoin(e.target.value as Coin)}
                   label="Coin"
                 >
                   <MenuItem value="srm">SRM</MenuItem>
@@ -416,25 +490,30 @@ function TransferDialog(props: TransferDialogProps) {
             </div>
           </div>
           <FormControl fullWidth>
-						{!isLocked ? (
-							<>
-            <OwnedTokenAccountsSelect
-              variant="outlined"
-              mint={mint}
-              onChange={(f: PublicKey) => setFrom(f)}
-            />
-            <FormHelperText>Token account to transfer to/from</FormHelperText>
-							</>
-						) : (
-							<>
-							<VestingAccountsSelect
-							variant="outlined"
-							mint={mint}
-							onChange={(v: PublicKey) => setVesting(v)}
-							/>
-							<FormHelperText>Vesting account to transfer to/from</FormHelperText>
-					</>
-						)}
+            {!isLocked ? (
+              <>
+                <OwnedTokenAccountsSelect
+                  variant="outlined"
+                  mint={mint}
+                  onChange={(f: PublicKey) => setFrom(f)}
+                />
+                <FormHelperText>
+                  Token account to transfer to/from
+                </FormHelperText>
+              </>
+            ) : (
+              <>
+                <VestingAccountsSelect
+                  variant="outlined"
+                  mint={mint}
+                  deposit={deposit}
+                  onChange={(v: PublicKey) => setVesting(v)}
+                />
+                <FormHelperText>
+                  Vesting account to transfer to/from
+                </FormHelperText>
+              </>
+            )}
           </FormControl>
         </DialogContent>
         <DialogActions>
@@ -443,9 +522,11 @@ function TransferDialog(props: TransferDialogProps) {
           </Button>
           <Button
             //@ts-ignore
-            onClick={() => onTransfer(isLocked ? vesting : from, amount, coin, isLocked)}
+            onClick={() =>
+              onTransfer(isLocked ? vesting : from, amount, coin, isLocked)
+            }
             color="primary"
-            disabled={!from || !amount || !coin}
+            disabled={(isLocked ? !vesting : !from) || !amount || !coin}
           >
             {title}
           </Button>

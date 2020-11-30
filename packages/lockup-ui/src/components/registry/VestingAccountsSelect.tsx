@@ -10,10 +10,11 @@ type Props = {
   mint?: PublicKey | null;
   variant?: 'outlined' | 'standard';
   onChange: (from: PublicKey) => void;
+  deposit?: boolean;
 };
 
 export default function VestingAccountsSelect(p: Props) {
-  const { mint, variant, onChange, style } = p;
+  const { mint, variant, onChange, style, deposit } = p;
   const vestings = useSelector((state: StoreState) => {
     if (!mint) {
       return [];
@@ -37,6 +38,9 @@ export default function VestingAccountsSelect(p: Props) {
         <MenuItem value={''}>No vesting accounts found</MenuItem>
       ) : (
         vestings.map(v => {
+          const availableAmount = deposit
+            ? v.account.balance.sub(v.account.whitelistOwned).toString()
+            : v.account.whitelistOwned.toString();
           return (
             <MenuItem value={v.publicKey.toString()}>
               <div
@@ -49,7 +53,7 @@ export default function VestingAccountsSelect(p: Props) {
                 <div>{`${v.publicKey.toString()}`}</div>
                 <div
                   style={{ float: 'right', color: '#ccc' }}
-                >{`${v.account.balance.sub(v.account.whitelistOwned).toString()}`}</div>
+                >{`${availableAmount}`}</div>
               </div>
             </MenuItem>
           );

@@ -36,7 +36,11 @@ import {
   Basket,
   PoolInstructions,
 } from '@project-serum/pool';
-import { txIx as lockupTxIx } from '@project-serum/lockup';
+import {
+  Client as LockupClient,
+  txIx as lockupTxIx,
+  accounts as lockupAccounts,
+} from '@project-serum/lockup';
 import * as instruction from './instruction';
 import * as accounts from './accounts';
 import { LockedRewardVendor } from './accounts/locked-vendor';
@@ -1379,6 +1383,107 @@ export default class Client {
       tx: txSig,
     };
   }
+
+  async depositLocked(
+    req: DepositLockedRequest,
+  ): Promise<DepositLockedResponse> {
+    const {
+      amount,
+      vesting,
+      safe,
+      lockupClient,
+      registrar,
+      entity,
+      member,
+      vault,
+    } = req;
+    const registryVaultAuthority = await this.accounts.vaultAuthority(
+      this.programId,
+      this.registrar,
+      registrar,
+    );
+    const instructionData = instruction.encode({
+      deposit: {
+        amount,
+      },
+    });
+    const relayAccounts = [
+      { pubkey: member, isWritable: true, isSigner: false },
+      {
+        pubkey: this.provider.wallet.publicKey,
+        isWritable: false,
+        isSigner: true,
+      },
+      { pubkey: entity, isWritable: true, isSigner: false },
+      { pubkey: this.registrar, isWritable: false, isSigner: false },
+      { pubkey: SYSVAR_CLOCK_PUBKEY, isWritable: false, isSigner: false },
+      { pubkey: vault, isWritable: true, isSigner: false },
+    ].concat(await this.poolAccounts(registrar));
+    const relaySigners: Account[] = [];
+
+    const { tx } = await lockupClient.whitelistWithdraw({
+      amount,
+      instructionData,
+      vesting,
+      whitelistProgram: this.programId,
+      whitelistProgramVaultAuthority: registryVaultAuthority,
+      relayAccounts,
+      relaySigners,
+      safe,
+    });
+    return { tx };
+  }
+
+  async withdrawLocked(
+    req: WithdrawLockedRequest,
+  ): Promise<WithdrawLockedResponse> {
+    const {
+      amount,
+      vesting,
+      safe,
+      lockupClient,
+      registrar,
+      member,
+      entity,
+      vault,
+    } = req;
+
+    const registryVaultAuthority = await this.accounts.vaultAuthority(
+      this.programId,
+      this.registrar,
+      registrar,
+    );
+    const instructionData = instruction.encode({
+      withdraw: {
+        amount,
+      },
+    });
+    const relayAccounts = [
+      { pubkey: member, isWritable: true, isSigner: false },
+      {
+        pubkey: this.provider.wallet.publicKey,
+        isWritable: false,
+        isSigner: true,
+      },
+      { pubkey: entity, isWritable: true, isSigner: false },
+      { pubkey: this.registrar, isWritable: false, isSigner: false },
+      { pubkey: SYSVAR_CLOCK_PUBKEY, isWritable: false, isSigner: false },
+      { pubkey: vault, isWritable: true, isSigner: false },
+    ].concat(await this.poolAccounts(registrar));
+    const relaySigners: Account[] = [];
+
+    const { tx } = await lockupClient.whitelistDeposit({
+      instructionData,
+      vesting,
+      whitelistProgram: this.programId,
+      whitelistProgramVaultAuthority: registryVaultAuthority,
+      relayAccounts,
+      relaySigners,
+      safe,
+    });
+
+    return { tx };
+  }
 }
 
 class Accounts {
@@ -2111,6 +2216,36 @@ type ClaimLockedRewardRequest = {
 };
 
 type ClaimLockedRewardResponse = {
+  tx: TransactionSignature;
+};
+
+type DepositLockedRequest = {
+  amount: BN;
+  vesting: PublicKey;
+  safe: lockupAccounts.Safe;
+  lockupClient: LockupClient;
+  registrar: Registrar;
+  entity: PublicKey;
+  member: PublicKey;
+  vault: PublicKey;
+};
+
+type DepositLockedResponse = {
+  tx: TransactionSignature;
+};
+
+type WithdrawLockedRequest = {
+  amount: BN;
+  vesting: PublicKey;
+  safe: lockupAccounts.Safe;
+  lockupClient: LockupClient;
+  registrar: Registrar;
+  member: PublicKey;
+  entity: PublicKey;
+  vault: PublicKey;
+};
+
+type WithdrawLockedResponse = {
   tx: TransactionSignature;
 };
 
