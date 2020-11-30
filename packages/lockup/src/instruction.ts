@@ -12,7 +12,8 @@ export type LockupInstruction =
   | WhitelistDeposit
   | WhitelistAdd
   | WhitelistDelete
-  | SetAuthority;
+  | SetAuthority
+  | AvailableForWithdrawal;
 
 type Initialize = {
   authority: PublicKey;
@@ -48,6 +49,8 @@ type SetAuthority = {
   newAuthority: PublicKey;
 };
 
+type AvailableForWithdrawal = {};
+
 const LOCKUP_INSTRUCTION_LAYOUT: Layout<LockupInstruction> = rustEnum([
   struct([publicKey('authority')], 'initialize'),
   struct(
@@ -66,6 +69,7 @@ const LOCKUP_INSTRUCTION_LAYOUT: Layout<LockupInstruction> = rustEnum([
   struct([WHITELIST_ENTRY_LAYOUT.replicate('entry')], 'whitelistAdd'),
   struct([WHITELIST_ENTRY_LAYOUT.replicate('entry')], 'whitelistDelete'),
   struct([publicKey('newAuthority')], 'setAuthority'),
+  struct([], 'availableForWithdrawal'),
 ]);
 
 export function decode(data: Buffer): LockupInstruction {

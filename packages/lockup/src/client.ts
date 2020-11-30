@@ -15,20 +15,18 @@ import {
 } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@project-serum/serum/lib/token-instructions';
 import {
-  createMintInstructions,
-  createTokenAccount,
   Provider,
   Wallet,
   NodeWallet,
   ProgramAccount,
   networks,
-  createTokenAccountInstrs,
   getTokenAccount,
+  simulateTransaction,
 } from '@project-serum/common';
 import * as instruction from './instruction';
 import * as accounts from './accounts';
 import { Safe, SIZE as SAFE_SIZE } from './accounts/safe';
-import { Vesting, SIZE as VESTING_SIZE } from './accounts/vesting';
+import { Vesting } from './accounts/vesting';
 import {
   Whitelist,
   WhitelistEntry,
@@ -75,6 +73,23 @@ export default class Client {
       provider,
       programId: networks.devnet.lockupProgramId,
       safe: networks.devnet.safe,
+    });
+  }
+
+  static localhost(wallet?: Wallet, opts?: SendOptions): Client {
+    if (wallet === undefined) {
+      wallet = NodeWallet.local();
+    }
+    opts = opts || Provider.defaultOptions();
+    const connection = new Connection(
+      'http://localhost:8899',
+      opts.preflightCommitment,
+    );
+    const provider = new Provider(connection, wallet, opts);
+    return new Client({
+      provider,
+      programId: networks.localhost.lockupProgramId,
+      safe: networks.localhost.safe,
     });
   }
 
@@ -501,10 +516,6 @@ export default class Client {
   async setAuthority(req: SetAuthorityRequest): Promise<SetAuthorityResponse> {
     throw new Error('not implemented');
   }
-
-  async migrate(req: MigrateRequest): Promise<MigrateResponse> {
-    throw new Error('not implemented');
-  }
 }
 
 class Accounts {
@@ -563,6 +574,30 @@ class Accounts {
       ],
       programId,
     );
+  }
+
+  async availableForWithdrawal(vesting: PublicKey): Promise<any> {
+    let tx = new Transaction();
+    tx.add(
+      new TransactionInstruction({
+        keys: [
+          { pubkey: vesting, isWritable: false, isSigner: false },
+          { pubkey: SYSVAR_CLOCK_PUBKEY, isWritable: false, isSigner: false },
+        ],
+        programId: this.programId,
+        data: instruction.encode({
+          availableForWithdrawal: {},
+        }),
+      }),
+    );
+    tx.setSigners(...[this.provider.wallet.publicKey]);
+    let resp = await simulateTransaction(
+      this.provider.connection,
+      tx,
+      'recent',
+    );
+    let log = resp.value.logs![1].slice('Program log: '.length);
+    return new BN(JSON.parse(log).result);
   }
 
   // Fetch all vesting accounts with the given beneficiary.
