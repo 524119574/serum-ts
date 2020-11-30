@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
+import BN from 'bn.js';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import { PublicKey } from '@solana/web3.js';
@@ -9,7 +10,7 @@ type Props = {
   style?: any;
   mint?: PublicKey | null;
   variant?: 'outlined' | 'standard';
-  onChange: (from: PublicKey) => void;
+  onChange: (from: PublicKey, maxAmount: BN) => void;
 };
 
 export default function OwnedTokenAccountsSelect(p: Props) {
@@ -32,7 +33,11 @@ export default function OwnedTokenAccountsSelect(p: Props) {
       onChange={e => {
         const pk = e.target.value as string;
         setFromAccount(pk);
-        onChange(new PublicKey(pk));
+        const pubkey = new PublicKey(pk);
+        const token = ownedTokenAccounts
+          .filter(ota => ota.publicKey.equals(pubkey))
+          .pop();
+        onChange(pubkey, token!.account.amount);
       }}
     >
       {ownedTokenAccounts.length === 0 ? (

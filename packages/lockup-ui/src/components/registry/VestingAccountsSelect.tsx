@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
+import BN from 'bn.js';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import { PublicKey } from '@solana/web3.js';
 import { State as StoreState } from '../../store/reducer';
+import * as lockup from '@project-serum/lockup';
+import { ProgramAccount } from '@project-serum/common';
 
 type Props = {
   style?: any;
   mint?: PublicKey | null;
   variant?: 'outlined' | 'standard';
-  onChange: (from: PublicKey) => void;
+  onChange: (from: PublicKey, maxAmount: BN) => void;
   deposit?: boolean;
 };
 
@@ -31,16 +34,15 @@ export default function VestingAccountsSelect(p: Props) {
       onChange={e => {
         const pk = e.target.value as string;
         setFromAccount(pk);
-        onChange(new PublicKey(pk));
+        const pubkey = new PublicKey(pk);
+        const v = vestings.filter(v => v.publicKey.equals(pubkey)).pop();
+        onChange(pubkey, availableAmount(v!, deposit));
       }}
     >
       {vestings.length === 0 ? (
         <MenuItem value={''}>No vesting accounts found</MenuItem>
       ) : (
         vestings.map(v => {
-          const availableAmount = deposit
-            ? v.account.balance.sub(v.account.whitelistOwned).toString()
-            : v.account.whitelistOwned.toString();
           return (
             <MenuItem value={v.publicKey.toString()}>
               <div
@@ -53,7 +55,7 @@ export default function VestingAccountsSelect(p: Props) {
                 <div>{`${v.publicKey.toString()}`}</div>
                 <div
                   style={{ float: 'right', color: '#ccc' }}
-                >{`${availableAmount}`}</div>
+                >{`${availableAmount(v, deposit).toString()}`}</div>
               </div>
             </MenuItem>
           );
@@ -61,4 +63,13 @@ export default function VestingAccountsSelect(p: Props) {
       )}
     </Select>
   );
+}
+
+function availableAmount(
+  v: ProgramAccount<lockup.accounts.Vesting>,
+  deposit?: boolean,
+): BN {
+  return deposit
+    ? v.account.balance.sub(v.account.whitelistOwned)
+    : v.account.whitelistOwned;
 }

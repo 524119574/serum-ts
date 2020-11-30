@@ -435,13 +435,19 @@ function TransferDialog(props: TransferDialogProps) {
   const [coin, setCoin] = useState<null | Coin>(null);
   const [from, setFrom] = useState<null | PublicKey>(null);
   const [vesting, setVesting] = useState<null | PublicKey>(null);
+  const [maxAmount, setMaxAmount] = useState<null | number>(null);
   const mint = !coin
     ? undefined
     : coin === 'srm' || coin === 'lsrm'
     ? srmMint
     : msrmMint;
-
   const isLocked = coin === 'lsrm' || coin === 'lmsrm';
+  const submitBtnDisabled =
+    (isLocked ? !vesting : !from) ||
+    !amount ||
+    !coin ||
+    !maxAmount ||
+    amount > maxAmount;
 
   return (
     <div>
@@ -466,7 +472,7 @@ function TransferDialog(props: TransferDialogProps) {
                 }}
                 variant="outlined"
                 onChange={e => setAmount(parseInt(e.target.value) as number)}
-                InputProps={{ inputProps: { min: 0 } }}
+                InputProps={{ inputProps: { min: 0, max: maxAmount ?? 0 } }}
               />
               <FormHelperText>{contextText}</FormHelperText>
             </div>
@@ -495,7 +501,10 @@ function TransferDialog(props: TransferDialogProps) {
                 <OwnedTokenAccountsSelect
                   variant="outlined"
                   mint={mint}
-                  onChange={(f: PublicKey) => setFrom(f)}
+                  onChange={(f: PublicKey, maxAmount: BN) => {
+                    setFrom(f);
+                    setMaxAmount(maxAmount.toNumber());
+                  }}
                 />
                 <FormHelperText>
                   Token account to transfer to/from
@@ -507,7 +516,10 @@ function TransferDialog(props: TransferDialogProps) {
                   variant="outlined"
                   mint={mint}
                   deposit={deposit}
-                  onChange={(v: PublicKey) => setVesting(v)}
+                  onChange={(v: PublicKey, maxAmount: BN) => {
+                    setVesting(v);
+                    setMaxAmount(maxAmount.toNumber());
+                  }}
                 />
                 <FormHelperText>
                   Vesting account to transfer to/from
@@ -523,10 +535,10 @@ function TransferDialog(props: TransferDialogProps) {
           <Button
             //@ts-ignore
             onClick={() =>
-              onTransfer(isLocked ? vesting : from, amount, coin, isLocked)
+              onTransfer(isLocked ? vesting! : from!, amount!, coin!, isLocked)
             }
             color="primary"
-            disabled={(isLocked ? !vesting : !from) || !amount || !coin}
+            disabled={submitBtnDisabled}
           >
             {title}
           </Button>
