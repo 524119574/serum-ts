@@ -32,6 +32,7 @@ import EntityGallery, { EntityActivityLabel } from './nodes/EntityGallery';
 import Me from './Me';
 import Rewards from './rewards/Rewards';
 import Vestings from '../lockup/Vestings';
+import VestingAccountsSelect from './VestingAccountsSelect';
 
 enum TabModel {
   Me,
@@ -233,7 +234,7 @@ function DepositDialog(props: DepositDialogProps) {
       contextText={'Select the amount and coin you want to deposit'}
       open={open}
       onClose={onClose}
-      onTransfer={async (from: PublicKey, amount: number, coin: string) => {
+      onTransfer={async (from: PublicKey, amount: number, coin: string, isLocked: boolean) => {
         enqueueSnackbar(
           `Depositing ${amount} ${coin} from ${from.toString()}`,
           {
@@ -293,7 +294,7 @@ function WithdrawDialog(props: WithdrawDialogProps) {
       contextText={'Select the amount and coin you want to withdraw'}
       open={open}
       onClose={onClose}
-      onTransfer={async (from: PublicKey, amount: number, coin: string) => {
+      onTransfer={async (from: PublicKey, amount: number, coin: string, isLocked: boolean) => {
         enqueueSnackbar(`Withdrawing ${amount} ${coin} to ${from.toString()}`, {
           variant: 'info',
         });
@@ -348,7 +349,7 @@ type TransferDialogProps = {
   contextText: string;
   open: boolean;
   onClose: () => void;
-  onTransfer: (from: PublicKey, amount: number, coin: string) => void;
+  onTransfer: (from: PublicKey, amount: number, coin: string, isLocked: boolean) => void;
 };
 
 function TransferDialog(props: TransferDialogProps) {
@@ -363,7 +364,10 @@ function TransferDialog(props: TransferDialogProps) {
   const [amount, setAmount] = useState<null | number>(null);
   const [coin, setCoin] = useState<null | string>(null);
   const [from, setFrom] = useState<null | PublicKey>(null);
-  const mint = !coin ? undefined : coin === 'srm' ? srmMint : msrmMint;
+	const [vesting, setVesting] = useState<null | PublicKey>(null);
+  const mint = !coin ? undefined : coin === 'srm' || coin === 'lsrm' ? srmMint : msrmMint;
+
+	const isLocked = (coin === 'lsrm' || coin === 'lmsrm');
 
   return (
     <div>
@@ -395,7 +399,7 @@ function TransferDialog(props: TransferDialogProps) {
             <div>
               <FormControl
                 variant="outlined"
-                style={{ width: '100px', marginLeft: '10px' }}
+                style={{ minWidth: '100px', marginLeft: '10px' }}
               >
                 <InputLabel>Coin</InputLabel>
                 <Select
@@ -405,17 +409,32 @@ function TransferDialog(props: TransferDialogProps) {
                 >
                   <MenuItem value="srm">SRM</MenuItem>
                   <MenuItem value="msrm">MSRM</MenuItem>
+                  <MenuItem value="lsrm">Locked SRM</MenuItem>
+                  <MenuItem value="lmsrm">Locked MSRM</MenuItem>
                 </Select>
               </FormControl>
             </div>
           </div>
           <FormControl fullWidth>
+						{!isLocked ? (
+							<>
             <OwnedTokenAccountsSelect
               variant="outlined"
               mint={mint}
               onChange={(f: PublicKey) => setFrom(f)}
             />
             <FormHelperText>Token account to transfer to/from</FormHelperText>
+							</>
+						) : (
+							<>
+							<VestingAccountsSelect
+							variant="outlined"
+							mint={mint}
+							onChange={(v: PublicKey) => setVesting(v)}
+							/>
+							<FormHelperText>Vesting account to transfer to/from</FormHelperText>
+					</>
+						)}
           </FormControl>
         </DialogContent>
         <DialogActions>
@@ -424,7 +443,7 @@ function TransferDialog(props: TransferDialogProps) {
           </Button>
           <Button
             //@ts-ignore
-            onClick={() => onTransfer(from, amount, coin)}
+            onClick={() => onTransfer(isLocked ? vesting : from, amount, coin, isLocked)}
             color="primary"
             disabled={!from || !amount || !coin}
           >

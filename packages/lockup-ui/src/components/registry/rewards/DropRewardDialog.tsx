@@ -234,7 +234,7 @@ function DropLockedForm(props: DropUnlockedFormProps) {
             <TextField
               style={{ height: '100%' }}
               disabled
-						  placeholder="Expiry Unix timestamp"
+              placeholder="Expiry Unix timestamp"
               fullWidth
               value={expiryTs}
             />
