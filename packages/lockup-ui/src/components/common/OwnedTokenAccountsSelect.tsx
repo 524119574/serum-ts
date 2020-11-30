@@ -37,7 +37,7 @@ export default function OwnedTokenAccountsSelect(p: Props) {
         const token = ownedTokenAccounts
           .filter(ota => ota.publicKey.equals(pubkey))
           .pop();
-        onChange(pubkey, token!.account.amount);
+        onChange(pubkey, new BN(token!.account.amount));
       }}
     >
       {ownedTokenAccounts.length === 0 ? (

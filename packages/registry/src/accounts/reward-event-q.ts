@@ -1,10 +1,10 @@
 import BN from 'bn.js';
-import { struct, Layout, u32 } from 'buffer-layout';
+import { struct, Layout } from 'buffer-layout';
 import { PublicKey } from '@solana/web3.js';
-import { publicKey, u64, i64, str, rustEnum, vec } from '@project-serum/borsh';
+import { publicKey, u64, rustEnum, vec } from '@project-serum/borsh';
 import { Ring, RingItemDecoder } from './ring';
 
-const CAPACITY = 14598;
+const CAPACITY = 14000;
 const MESSAGE_SIZE = 137;
 
 export class RewardEventQueue extends Ring<RewardEvent> {

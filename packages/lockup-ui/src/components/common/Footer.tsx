@@ -172,13 +172,17 @@ function NetworkEnvironment() {
         <li>SRM Mint: {network.srm.toString()}</li>
         <li>MSRM Mint: {network.msrm.toString()}</li>
       </ul>
-      <Typography
-        style={{ paddingLeft: '10px', fontSize: '14px', fontWeight: 'bold' }}
-      >
-        Registrar
-      </Typography>
       {registrar && safe && (
         <>
+          <Typography
+            style={{
+              paddingLeft: '10px',
+              fontSize: '14px',
+              fontWeight: 'bold',
+            }}
+          >
+            Registrar
+          </Typography>
           <ul>
             <li>Authority: {registrar.account.authority.toString()}</li>
             <li>
