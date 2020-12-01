@@ -275,7 +275,16 @@ function DropLockedForm(props: DropUnlockedFormProps) {
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button
-          onClick={() => sendLockedRewards()}
+          onClick={() =>
+            sendLockedRewards().catch(err => {
+              snack.enqueueSnackbar(
+                `Error dropping locked reward: ${err.toString()}`,
+                {
+                  variant: 'error',
+                },
+              );
+            })
+          }
           type="submit"
           color="primary"
           disabled={!isSendEnabled}
@@ -410,7 +419,16 @@ function DropUnlockedForm(props: DropLockedFormProps) {
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button
-          onClick={() => sendUnlockedRewards()}
+          onClick={() =>
+            sendUnlockedRewards().catch(err => {
+              snack.enqueueSnackbar(
+                `Error dropping unlocked reward: ${err.toString()}`,
+                {
+                  variant: 'error',
+                },
+              );
+            })
+          }
           type="submit"
           color="primary"
           disabled={!isSendEnabled}

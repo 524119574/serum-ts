@@ -300,7 +300,17 @@ function JoinButton(props: JoinButtonProps) {
   };
   return (
     <div>
-      <Button variant="contained" color="secondary" onClick={joinEntity}>
+      <Button
+        variant="contained"
+        color="secondary"
+        onClick={() =>
+          joinEntity().catch(err => {
+            enqueueSnackbar(`Error joining entity: ${err.toString()}`, {
+              variant: 'error',
+            });
+          })
+        }
+      >
         Join
       </Button>
     </div>

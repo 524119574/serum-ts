@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ChartistGraph from 'react-chartist';
 import BN from 'bn.js';
+import { useSnackbar } from 'notistack';
 import { FixedScaleAxis, IChartOptions, Interpolation } from 'chartist';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Card from '@material-ui/core/Card';
@@ -13,8 +14,7 @@ import Link from '@material-ui/core/Link';
 import { accounts } from '@project-serum/lockup';
 import { Network } from '@project-serum/common';
 import { PublicKey } from '@solana/web3.js';
-import { useSnackbar } from 'notistack';
-import { ProgramAccount, State as StoreState } from '../../store/reducer';
+import { ProgramAccount } from '../../store/reducer';
 import { useWallet } from '../common/WalletProvider';
 import OwnedTokenAccountsSelect from '../../components/common/OwnedTokenAccountsSelect';
 import { withTx } from '../../components/common/Notification';
@@ -27,6 +27,7 @@ type VestingAccountCardProps = {
 export default function VestingAccountCard(props: VestingAccountCardProps) {
   const { vesting, network } = props;
   const { lockupClient } = useWallet();
+  const { enqueueSnackbar } = useSnackbar();
 
   const currencyLabel = vesting.account.mint.equals(network.srm)
     ? 'SRM'
@@ -91,6 +92,14 @@ export default function VestingAccountCard(props: VestingAccountCardProps) {
       .availableForWithdrawal(vesting.publicKey)
       .then(amount => {
         setAvailableForWithdrawal(amount);
+      })
+      .catch(err => {
+        enqueueSnackbar(
+          `Error fetching available for withdrawal: ${err.toString()}`,
+          {
+            variant: 'error',
+          },
+        );
       });
   }, [lockupClient.accounts, vesting]);
   const snack = useSnackbar();
@@ -213,7 +222,19 @@ export default function VestingAccountCard(props: VestingAccountCardProps) {
               mint={vesting.account.mint}
               onChange={(f: PublicKey) => setWithdrawalAccount(f)}
             />
-            <div style={{ marginTop: '10px' }} onClick={() => withdraw()}>
+            <div
+              style={{ marginTop: '10px' }}
+              onClick={() =>
+                withdraw().catch(err => {
+                  enqueueSnackbar(
+                    `Error withdrawing from vesting account: ${err.toString()}`,
+                    {
+                      variant: 'error',
+                    },
+                  );
+                })
+              }
+            >
               <Button
                 color="primary"
                 disabled={!withdrawEnabled}

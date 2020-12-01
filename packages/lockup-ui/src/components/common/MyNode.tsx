@@ -419,7 +419,7 @@ type TransferDialogProps = {
     amount: number,
     coin: Coin,
     isLocked: boolean,
-  ) => void;
+  ) => Promise<void>;
 };
 
 function TransferDialog(props: TransferDialogProps) {
@@ -430,6 +430,7 @@ function TransferDialog(props: TransferDialogProps) {
       msrmMint: network.msrm,
     };
   });
+  const { enqueueSnackbar } = useSnackbar();
   const { open, onClose, onTransfer, title, contextText, deposit } = props;
   const [amount, setAmount] = useState<null | number>(null);
   const [coin, setCoin] = useState<null | Coin>(null);
@@ -535,7 +536,16 @@ function TransferDialog(props: TransferDialogProps) {
           <Button
             //@ts-ignore
             onClick={() =>
-              onTransfer(isLocked ? vesting! : from!, amount!, coin!, isLocked)
+              onTransfer(
+                isLocked ? vesting! : from!,
+                amount!,
+                coin!,
+                isLocked,
+              ).catch(err => {
+                enqueueSnackbar(`Error transferring funds: ${err.toString()}`, {
+                  variant: 'error',
+                });
+              })
             }
             color="primary"
             disabled={submitBtnDisabled}

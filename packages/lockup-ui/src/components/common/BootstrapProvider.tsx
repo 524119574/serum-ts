@@ -265,7 +265,7 @@ export default function BootstrapProvider(props: PropsWithChildren<ReactNode>) {
     lockupClient.provider.connection,
   ]);
 
-  const shutdown = useCallback(() => {
+  const shutdown = useCallback(async () => {
     wallet.disconnect();
     try {
       registryClient.accounts.rewardEventQueueDisconnect();
@@ -280,10 +280,18 @@ export default function BootstrapProvider(props: PropsWithChildren<ReactNode>) {
 
   useEffect(() => {
     if (bootstrapTrigger) {
-      bootstrap();
+      bootstrap().catch(err => {
+        enqueueSnackbar(`Error bootstrapping application: ${err.toString()}`, {
+          variant: 'error',
+        });
+      });
     }
     if (shutdownTrigger) {
-      shutdown();
+      shutdown().catch(err => {
+        enqueueSnackbar(`Error shutting down application: ${err.toString()}`, {
+          variant: 'error',
+        });
+      });
     }
   }, [bootstrapTrigger, bootstrap, shutdownTrigger, shutdown]);
 

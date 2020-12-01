@@ -51,6 +51,14 @@ export default function Rewards() {
                   vendor,
                 },
               }),
+            )
+            .catch(err =>
+              snack.enqueueSnackbar(
+                `Error fetching locked reward vendor: ${err.toString()}`,
+                {
+                  variant: 'error',
+                },
+              ),
             );
         }
       }
@@ -88,7 +96,7 @@ export default function Rewards() {
     .reverse();
 
   // On click.
-  const claimBtnClickHandler = async () => {
+  const claimBtnClickHandler = async (): Promise<void> => {
     let r = (() => {
       for (let k = rewards!.length - 1; k >= 0; k -= 1) {
         let r = rewards![k];
@@ -140,7 +148,18 @@ export default function Rewards() {
         </Typography>
         <div style={{ display: 'flex' }}>
           {rewards.filter(r => r.needsClaim).length > 0 && (
-            <ClaimButton onClick={claimBtnClickHandler} />
+            <ClaimButton
+              onClick={() =>
+                claimBtnClickHandler().catch(err => {
+                  snack.enqueueSnackbar(
+                    `Error ending pending redemption: ${err.toString()}`,
+                    {
+                      variant: 'error',
+                    },
+                  );
+                })
+              }
+            />
           )}
           <DropButton />
         </div>

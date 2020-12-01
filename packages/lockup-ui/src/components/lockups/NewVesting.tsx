@@ -82,6 +82,35 @@ function NewVestingDialog(props: NewVestingDialogProps) {
   const [mint, setMint] = useState<null | PublicKey>(null);
   const [mintLabel, setMintLabel] = useState('');
 
+  const createVestingClickHandler = async () => {
+    setIsLoading(true);
+    enqueueSnackbar('Creating vesting acount...', {
+      variant: 'info',
+    });
+    let { vesting } = await lockupClient.createVesting({
+      beneficiary: new PublicKey(beneficiary),
+      endTs: new BN(timestamp),
+      periodCount: new BN(periodCount),
+      depositAmount: new BN(amount),
+      depositor: fromAccount as PublicKey,
+    });
+    const vestingAccount = await lockupClient.accounts.vesting(vesting);
+    dispatch({
+      type: ActionType.LockupCreateVesting,
+      item: {
+        vesting: {
+          publicKey: vesting,
+          account: vestingAccount,
+        },
+      },
+    });
+    setIsLoading(false);
+    enqueueSnackbar(`Vesting account created ${vesting}`, {
+      variant: 'success',
+    });
+    onClose();
+  };
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>
@@ -235,34 +264,16 @@ function NewVestingDialog(props: NewVestingDialogProps) {
           type="submit"
           color="primary"
           disabled={!submitBtnEnabled || isLoading}
-          onClick={async () => {
-            setIsLoading(true);
-            enqueueSnackbar('Creating vesting acount...', {
-              variant: 'info',
-            });
-            let { vesting } = await lockupClient.createVesting({
-              beneficiary: new PublicKey(beneficiary),
-              endTs: new BN(timestamp),
-              periodCount: new BN(periodCount),
-              depositAmount: new BN(amount),
-              depositor: fromAccount as PublicKey,
-            });
-            const vestingAccount = await lockupClient.accounts.vesting(vesting);
-            dispatch({
-              type: ActionType.LockupCreateVesting,
-              item: {
-                vesting: {
-                  publicKey: vesting,
-                  account: vestingAccount,
+          onClick={() =>
+            createVestingClickHandler().catch(err => {
+              enqueueSnackbar(
+                `Error creating vesting account: ${err.toString()}`,
+                {
+                  variant: 'error',
                 },
-              },
-            });
-            setIsLoading(false);
-            enqueueSnackbar(`Vesting account created ${vesting}`, {
-              variant: 'success',
-            });
-            onClose();
-          }}
+              );
+            })
+          }
         >
           Create
         </Button>

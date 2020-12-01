@@ -17,12 +17,18 @@ export async function withTx(
   snack.enqueueSnackbar(beforeLabel, {
     variant: 'info',
   });
-  let tx = await execTx();
-  snack.closeSnackbar();
-  snack.enqueueSnackbar(afterLabel, {
-    variant: 'success',
-    action: <ViewTransactionOnExplorerButton signature={tx} />,
-  });
+  try {
+    let tx = await execTx();
+    snack.closeSnackbar();
+    snack.enqueueSnackbar(afterLabel, {
+      variant: 'success',
+      action: <ViewTransactionOnExplorerButton signature={tx} />,
+    });
+  } catch (err) {
+    snack.enqueueSnackbar(`Error: ${err.toString()}`, {
+      variant: 'error',
+    });
+  }
 }
 
 export function ViewTransactionOnExplorerButton(props: Props) {

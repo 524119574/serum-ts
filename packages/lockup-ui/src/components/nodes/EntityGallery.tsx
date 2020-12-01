@@ -444,7 +444,15 @@ function CreateEntityDialog(props: EntityDialogProps) {
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button
-          onClick={() => createEntity()}
+          onClick={() =>
+            createEntity()
+              .then(() => onClose())
+              .catch(err => {
+                enqueueSnackbar(`Error creating entity: ${err.toString()}`, {
+                  variant: 'error',
+                });
+              })
+          }
           type="submit"
           color="primary"
           disabled={!isCreateEnabled}

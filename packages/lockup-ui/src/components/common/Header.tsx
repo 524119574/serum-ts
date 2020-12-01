@@ -255,7 +255,18 @@ function UserSelector() {
     >
       {member === undefined && (
         <MenuItem value="create-member">
-          <div onClick={() => createStakeAccount()}>
+          <div
+            onClick={() =>
+              createStakeAccount().catch(err => {
+                enqueueSnackbar(
+                  `Error creating stake account: ${err.toString()}`,
+                  {
+                    variant: 'error',
+                  },
+                );
+              })
+            }
+          >
             <IconButton color="inherit">
               <PersonAddIcon />
               <Typography style={{ marginLeft: '15px' }}>

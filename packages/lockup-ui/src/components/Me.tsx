@@ -188,23 +188,39 @@ export default function Me() {
 
   const createSrmPool = async (shares: number) => {
     if (shares > 0) {
-      await createPoolTokens(shares, member!.account.spt, 'SRM');
+      createPoolTokens(shares, member!.account.spt, 'SRM').catch(err => {
+        enqueueSnackbar(`Error creating srm pool: ${err.toString()}`, {
+          variant: 'error',
+        });
+      });
     }
   };
   const redeemSrmPool = async (shares: number) => {
     if (shares > 0) {
-      await redeemPoolTokens(shares, member!.account.spt, 'SRM');
+      redeemPoolTokens(shares, member!.account.spt, 'SRM').catch(err => {
+        enqueueSnackbar(`Error redeeming srm pool: ${err.toString()}`, {
+          variant: 'error',
+        });
+      });
     }
   };
 
   const createMsrmPool = async (shares: number) => {
     if (shares > 0) {
-      await createPoolTokens(shares, member!.account.sptMega, 'MSRM');
+      createPoolTokens(shares, member!.account.sptMega, 'MSRM').catch(err => {
+        enqueueSnackbar(`Error creating msrm pool: ${err.toString()}`, {
+          variant: 'error',
+        });
+      });
     }
   };
   const redeemMsrmPool = async (shares: number) => {
     if (shares > 0) {
-      await redeemPoolTokens(shares, member!.account.sptMega, 'MSRM');
+      redeemPoolTokens(shares, member!.account.sptMega, 'MSRM').catch(err => {
+        enqueueSnackbar(`Error redeeming msrm pool: ${err.toString()}`, {
+          variant: 'error',
+        });
+      });
     }
   };
 
@@ -661,7 +677,12 @@ function PendingWithdrawalButton(props: PendingWithdrawalButtonProps) {
 
   let disabled = false;
   let color = skin.instance().ready;
-  let onClick = async () => endPendingWithdrawal();
+  let onClick = async () =>
+    endPendingWithdrawal().catch(err => {
+      enqueueSnackbar(`Error ending pending redemption: ${err.toString()}`, {
+        variant: 'error',
+      });
+    });
   if (pendingWithdrawal.account.burned) {
     disabled = true;
     color = skin.instance().active;
