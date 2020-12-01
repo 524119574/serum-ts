@@ -1,6 +1,7 @@
 import { Layout } from 'buffer-layout';
 import {
   vec,
+  bool,
   option,
   i64,
   publicKey,

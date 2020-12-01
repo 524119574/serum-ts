@@ -197,7 +197,7 @@ function UserSelector() {
   const { wallet } = useWallet();
   const dispatch = useDispatch();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const { registryClient } = useWallet();
+  const { lockupClient, registryClient } = useWallet();
   const { network, member } = useSelector((state: StoreState) => {
     return {
       member: state.registry.member,
@@ -215,6 +215,11 @@ function UserSelector() {
     const entity = network.defaultEntity;
     const { tx, member } = await registryClient.createMember({
       entity,
+			delegate: await lockupClient.accounts.vaultAuthority(
+				lockupClient.programId,
+				lockupClient.safe,
+				wallet.publicKey,
+			),
     });
     const memberAcc = await registryClient.accounts.member(member);
     dispatch({

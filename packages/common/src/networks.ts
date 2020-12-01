@@ -75,33 +75,33 @@ export const networks: Networks = {
     url: 'http://localhost:8899',
     explorerClusterSuffix: 'localhost',
 
-    srm: new PublicKey('2cwt2zprhHEtWYyZ3wJDVxyXuGyK8v9dZeByax774CjX'),
-    msrm: new PublicKey('ATdBFEbyi3YYvJyRmKx7u6Y6t9j8E3p9K1HpbTxAuDYa'),
-    god: new PublicKey('5EHVN1WWZiqUsdVuvu96ftT5jTNLQfwgjC7mhBvauorX'),
-    megaGod: new PublicKey('6hCxeSDuANpc3QFDj44pKznJyz2QkxF133ueBLaKwBzU'),
+    srm: new PublicKey('6jHHb8rdZi1QgBGZBocaWBHhjsa7KF71f6oS2L4mwqHp'),
+    msrm: new PublicKey('CrAej8LoNbxQEMseJPuCDu1YczFEZdsSauGJQBeEeezC'),
+    god: new PublicKey('9PmvYEZzbPJG5foxwoasfttYy3byy3s2Tw5E1X6AnviK'),
+    megaGod: new PublicKey('9UNtsH721VXifiifgaVizGvuYCvmubxFJndRcubgudLT'),
     registryProgramId: new PublicKey(
-      '6k5Uk6nv6Vt9podP4MpBru6Lb8vnCo9RA1bj8b2eRXLE',
+      'Fdh9CPXkZwr94srE1HBZk2RVPdTa2VHbZBLYKEb6PeMp',
     ),
     stakeProgramId: new PublicKey(
-      '4XddTfUWHgHWCkTDyqtbXGdfoqafinBtJaAHbVp4EDa8',
+      'EHTMFmexvyXJ6zYRPZ1LmKPzzyccPraNTP3dg6b9meaJ',
     ),
     lockupProgramId: new PublicKey(
-      '44HnSQRNFVMd2BQDHoyp2PDeCLVdj57NmT1zHaqsNzmd',
+      'ioKZXGwRwP4nAugYoGZFZRirNoSNe1h63gPxA51M1BX',
     ),
     retbufProgramId: new PublicKey(
       'shmem4EWT2sPdVGvTZCzXXRAURL9G5vpPxNwSeKhHUL',
     ),
     metaEntityProgramId: new PublicKey(
-      'B5DyuvjcZ2aVTCnmRC2sn3msJtrGR6igs1HVsfPgtbPr',
+      'E195Ag6NU3UF5GNjWaH8ToFnF9oKoApR3NdQ9tJKnot4',
     ),
-    registrar: new PublicKey('DroEuY7o4KUTk2FVsiMeAnjMDDDfQhSnKLFuNFeVxDrG'),
+    registrar: new PublicKey('HoHuopAR9DjAurqbPVLArrcq7xAfZ483WWSU7gPBAZL1'),
     rewardEventQueue: new PublicKey(
-      'BCQ8N4njfnbstzmiP8aENsuPF4GyWwwsaV5kR8mShYtQ',
+      '9LMNdoFhQeL3Bukh4jvHWAqGNDq6qJ7Hx369gvBVP326',
     ),
-    safe: new PublicKey('EWKgfPY98P3aQnEw5mkHWjZRFny4g1aRuDUDWgSyhenj'),
-    retbuf: new PublicKey('6qwALbhAYNTC8wazernhfm3tTtsNFW4EyQHs9BwDKrgn'),
+    safe: new PublicKey('5hmkniQzGBAYrbBnBUisbLkRbKy7xn3JG1eS1tTYKarT'),
+    retbuf: new PublicKey('2highpD452EMLwLVnApSamj1uQ4GHuABLkaUfL7s4Xuu'),
     defaultEntity: new PublicKey(
-      '5XMiLDnzuorg6dRit3MMm8wbAxmniEg6pMTLBnCnXMhZ',
+      'F5Ras1dCGhcPJ2rPbQotMLteX4hP5W8igsXdRXw6S8Ay',
     ),
   },
 };

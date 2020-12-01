@@ -229,7 +229,7 @@ export default class Client {
     const vaultAuthority = await this.accounts.vaultAuthority(
       this.programId,
       this.safe,
-      vesting,
+      beneficiaryAddress,
     );
 
     const tx = new Transaction();
@@ -270,8 +270,7 @@ export default class Client {
     const vaultAuthority = await this.accounts.vaultAuthority(
       this.programId,
       this.safe,
-      vesting,
-      vestingAcc,
+      beneficiaryAddress,
     );
 
     const tx = new Transaction();
@@ -332,8 +331,7 @@ export default class Client {
     const vaultAuthority = await this.accounts.vaultAuthority(
       this.programId,
       this.safe,
-      vesting,
-      vestingAcc,
+      beneficiaryAddress,
     );
 
     const tx = new Transaction();
@@ -401,8 +399,7 @@ export default class Client {
     const vaultAuthority = await this.accounts.vaultAuthority(
       this.programId,
       this.safe,
-      vesting,
-      vestingAcc,
+      beneficiaryAddress,
     );
 
     const tx = new Transaction();
@@ -560,20 +557,13 @@ class Accounts {
   async vaultAuthority(
     programId: PublicKey,
     safeAddress: PublicKey,
-    vestingAddress: PublicKey,
-    vesting?: Vesting,
+    beneficiary: PublicKey,
   ): Promise<PublicKey> {
-    if (vesting === undefined) {
-      vesting = await this.vesting(vestingAddress);
-    }
-    return PublicKey.createProgramAddress(
-      [
-        safeAddress.toBuffer(),
-        vestingAddress.toBuffer(),
-        Buffer.from([vesting.nonce]),
-      ],
+    const [pubkey, _nonce] = await PublicKey.findProgramAddress(
+      [safeAddress.toBuffer(), beneficiary.toBuffer()],
       programId,
     );
+    return pubkey;
   }
 
   async availableForWithdrawal(vesting: PublicKey): Promise<BN> {

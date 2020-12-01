@@ -32,6 +32,7 @@ export async function createVesting(
     vesting,
     vault,
     mint,
+    beneficiary,
   );
 
   return [
@@ -73,9 +74,10 @@ export async function allocVestingIxs(
   vesting: PublicKey,
   vault: PublicKey,
   mint: PublicKey,
+  beneficiary: PublicKey,
 ): Promise<{ nonce: number; ixs: TransactionInstruction[] }> {
   const [vaultAuthority, nonce] = await PublicKey.findProgramAddress(
-    [safe.toBuffer(), vesting.toBuffer()],
+    [safe.toBuffer(), beneficiary.toBuffer()],
     programId,
   );
   const createVaultInstructions = await createTokenAccountInstrs(

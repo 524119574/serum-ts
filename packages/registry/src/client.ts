@@ -506,9 +506,6 @@ export default class Client {
         ? this.provider.wallet.publicKey
         : beneficiary.publicKey;
 
-    if (delegate === undefined) {
-      delegate = new PublicKey(Buffer.alloc(32));
-    }
     if (poolTokenMint === undefined) {
       const pool = await this.accounts.pool(this.registrar);
       poolTokenMint = pool.poolTokenMint;
@@ -1349,6 +1346,7 @@ export default class Client {
       vesting.publicKey,
       vestingVault.publicKey,
       mint,
+      this.provider.wallet.publicKey,
     );
 
     const tx = new Transaction();
@@ -2048,9 +2046,9 @@ type UpdateEntityResponse = {
 };
 
 type CreateMemberRequest = {
-  beneficiary?: Account;
   entity: PublicKey;
-  delegate?: PublicKey;
+  delegate: PublicKey;
+  beneficiary?: Account;
   poolTokenMint?: PublicKey;
   megaPoolTokenMint?: PublicKey;
   registrar?: Registrar;
