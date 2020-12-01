@@ -107,7 +107,7 @@ export default function VestingAccountCard(props: VestingAccountCardProps) {
   const withdrawEnabled =
     withdrawalAccount !== null &&
     availableForWithdrawal !== null &&
-    availableForWithdrawal.gte(new BN(0));
+    availableForWithdrawal.gtn(0);
   const withdraw = async () => {
     await withTx(
       snack,
@@ -222,23 +222,21 @@ export default function VestingAccountCard(props: VestingAccountCardProps) {
               mint={vesting.account.mint}
               onChange={(f: PublicKey) => setWithdrawalAccount(f)}
             />
-            <div
-              style={{ marginTop: '10px' }}
-              onClick={() =>
-                withdraw().catch(err => {
-                  enqueueSnackbar(
-                    `Error withdrawing from vesting account: ${err.toString()}`,
-                    {
-                      variant: 'error',
-                    },
-                  );
-                })
-              }
-            >
+            <div style={{ marginTop: '10px' }}>
               <Button
                 color="primary"
                 disabled={!withdrawEnabled}
                 variant="contained"
+                onClick={() =>
+                  withdraw().catch(err => {
+                    enqueueSnackbar(
+                      `Error withdrawing from vesting account: ${err.toString()}`,
+                      {
+                        variant: 'error',
+                      },
+                    );
+                  })
+                }
               >
                 Withdraw
               </Button>

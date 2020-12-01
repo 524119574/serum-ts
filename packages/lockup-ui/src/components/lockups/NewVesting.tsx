@@ -87,28 +87,34 @@ function NewVestingDialog(props: NewVestingDialogProps) {
     enqueueSnackbar('Creating vesting acount...', {
       variant: 'info',
     });
-    let { vesting } = await lockupClient.createVesting({
-      beneficiary: new PublicKey(beneficiary),
-      endTs: new BN(timestamp),
-      periodCount: new BN(periodCount),
-      depositAmount: new BN(amount),
-      depositor: fromAccount as PublicKey,
-    });
-    const vestingAccount = await lockupClient.accounts.vesting(vesting);
-    dispatch({
-      type: ActionType.LockupCreateVesting,
-      item: {
-        vesting: {
-          publicKey: vesting,
-          account: vestingAccount,
+    try {
+      let { vesting } = await lockupClient.createVesting({
+        beneficiary: new PublicKey(beneficiary),
+        endTs: new BN(timestamp),
+        periodCount: new BN(periodCount),
+        depositAmount: new BN(amount),
+        depositor: fromAccount as PublicKey,
+      });
+      const vestingAccount = await lockupClient.accounts.vesting(vesting);
+      dispatch({
+        type: ActionType.LockupCreateVesting,
+        item: {
+          vesting: {
+            publicKey: vesting,
+            account: vestingAccount,
+          },
         },
-      },
-    });
+      });
+      enqueueSnackbar(`Vesting account created ${vesting}`, {
+        variant: 'success',
+      });
+      onClose();
+    } catch (err) {
+      enqueueSnackbar(`Error creating vesting account: ${err.toString()}`, {
+        variant: 'error',
+      });
+    }
     setIsLoading(false);
-    enqueueSnackbar(`Vesting account created ${vesting}`, {
-      variant: 'success',
-    });
-    onClose();
   };
 
   return (
@@ -264,16 +270,7 @@ function NewVestingDialog(props: NewVestingDialogProps) {
           type="submit"
           color="primary"
           disabled={!submitBtnEnabled || isLoading}
-          onClick={() =>
-            createVestingClickHandler().catch(err => {
-              enqueueSnackbar(
-                `Error creating vesting account: ${err.toString()}`,
-                {
-                  variant: 'error',
-                },
-              );
-            })
-          }
+          onClick={() => createVestingClickHandler()}
         >
           Create
         </Button>
