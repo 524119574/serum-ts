@@ -22,7 +22,6 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { PublicKey } from '@solana/web3.js';
-import { accounts, Client } from '@project-serum/registry';
 import { useWallet } from '../../components/common/WalletProvider';
 import OwnedTokenAccountsSelect from '../../components/common/OwnedTokenAccountsSelect';
 import { ViewTransactionOnExplorerButton } from '../../components/common/Notification';
@@ -62,8 +61,7 @@ type MyNodeBannerProps = {
 
 function MyNodeBanner(props: MyNodeBannerProps) {
   const [tab, setTab] = useState(TabModel.Me);
-  const { registryClient } = useWallet();
-  const { member, entity, registrar } = useSelector((state: StoreState) => {
+  const { member, entity } = useSelector((state: StoreState) => {
     const member = state.registry.member;
     return {
       registrar: state.registry.registrar,

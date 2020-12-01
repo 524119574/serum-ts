@@ -101,7 +101,7 @@ export default function VestingAccountCard(props: VestingAccountCardProps) {
           },
         );
       });
-  }, [lockupClient.accounts, vesting]);
+  }, [lockupClient.accounts, vesting, enqueueSnackbar]);
   const snack = useSnackbar();
 
   const withdrawEnabled =

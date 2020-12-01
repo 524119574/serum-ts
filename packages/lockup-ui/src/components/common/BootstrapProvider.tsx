@@ -260,6 +260,7 @@ export default function BootstrapProvider(props: PropsWithChildren<ReactNode>) {
     network.label,
     registryClient.accounts,
     registryClient.registrar,
+    registryClient.rewardEventQueue,
     wallet.publicKey,
     network.defaultEntity,
     lockupClient.provider.connection,
@@ -276,7 +277,7 @@ export default function BootstrapProvider(props: PropsWithChildren<ReactNode>) {
       type: ActionType.CommonDidShutdown,
       item: {},
     });
-  }, [lockupClient.provider.connection]);
+  }, [registryClient.accounts, dispatch, wallet]);
 
   useEffect(() => {
     if (bootstrapTrigger) {
@@ -293,7 +294,7 @@ export default function BootstrapProvider(props: PropsWithChildren<ReactNode>) {
         });
       });
     }
-  }, [bootstrapTrigger, bootstrap, shutdownTrigger, shutdown]);
+  }, [bootstrapTrigger, bootstrap, shutdownTrigger, shutdown, enqueueSnackbar]);
 
   return <>{props.children}</>;
 }
