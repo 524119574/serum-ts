@@ -6,7 +6,8 @@ import React, {
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
-import { sleep, token } from '@project-serum/common';
+import { sleep, token, ProgramAccount } from '@project-serum/common';
+import * as registry from '@project-serum/registry';
 import { State as StoreState } from '../../store/reducer';
 import { ActionType } from '../../store/actions';
 import { useWallet } from './WalletProvider';
@@ -34,7 +35,7 @@ export default function BootstrapProvider(props: PropsWithChildren<ReactNode>) {
       const conn = registryClient.accounts.rewardEventQueueConnect(
         registryClient.rewardEventQueue,
       );
-      conn.on('connected', rewardEventQueue => {
+      conn.on('connected', (rewardEventQueue: ProgramAccount<registry.accounts.RewardEventQueue>) => {
         dispatch({
           type: ActionType.RegistrySetRewardEventQueue,
           item: {
@@ -42,7 +43,7 @@ export default function BootstrapProvider(props: PropsWithChildren<ReactNode>) {
           },
         });
       });
-      conn.on('change', rewardEventQueue => {
+      conn.on('change', (rewardEventQueue: ProgramAccount<registry.accounts.RewardEventQueue>) => {
         dispatch({
           type: ActionType.RegistrySetRewardEventQueue,
           item: {
