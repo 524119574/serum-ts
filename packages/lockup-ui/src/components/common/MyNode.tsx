@@ -29,24 +29,27 @@ import { State as StoreState } from '../../store/reducer';
 import { ActionType } from '../../store/actions';
 import EntityGallery, { EntityActivityLabel } from '../nodes/EntityGallery';
 import Me from '../Me';
+import Stake from '../Stake';
 import Rewards from '../rewards/Rewards';
 import Vestings from '../lockups/Vestings';
 import VestingAccountsSelect from './VestingAccountsSelect';
 
 enum TabModel {
   Me,
+  Stake,
   EntityGallery,
   Rewards,
   Lockup,
 }
 
-export default function Stake() {
+export default function MyNode() {
   const [tab, setTab] = useState(TabModel.Me);
   return (
     <div>
       <MyNodeBanner setTab={setTab} />
       <Container fixed maxWidth="md" style={{ flex: 1, display: 'flex' }}>
         {tab === TabModel.Me && <Me />}
+        {tab === TabModel.Stake && <Stake />}
         {tab === TabModel.EntityGallery && <EntityGallery />}
         {tab === TabModel.Rewards && <Rewards />}
         {tab === TabModel.Lockup && <Vestings />}
@@ -186,6 +189,7 @@ function MyNodeBanner(props: MyNodeBannerProps) {
             }}
           >
             <Tab value={TabModel.Me} label="Me" />
+            <Tab value={TabModel.Stake} label="Stake" />
             <Tab value={TabModel.EntityGallery} label="Nodes" />
             <Tab value={TabModel.Rewards} label="Rewards" />
             <Tab value={TabModel.Lockup} label="Lockups" />
