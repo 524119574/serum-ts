@@ -94,7 +94,10 @@ describe('End-to-end tests', () => {
     });
 
     // Create Member.
-    let { member, spt, sptMega } = await client.createMember({ entity });
+    let { member, spt, sptMega } = await client.createMember({
+      entity,
+      delegate: new PublicKey(Buffer.alloc(32)),
+    });
     let m = await client.accounts.member(member);
     expect(m.initialized).toBe(true);
     expect(m.registrar).toEqual(registrarAddress);

@@ -10,7 +10,7 @@ export interface Vesting {
   mint: PublicKey;
   vault: PublicKey;
   grantor: PublicKey;
-  balance: BN;
+  outstanding: BN;
   startBalance: BN;
   startTs: BN;
   endTs: BN;
@@ -26,7 +26,7 @@ export const VESTING_LAYOUT: Layout<Vesting> = struct([
   publicKey('mint'),
   publicKey('vault'),
   publicKey('grantor'),
-  u64('balance'),
+  u64('outstanding'),
   u64('startBalance'),
   i64('startTs'),
   i64('endTs'),
@@ -53,7 +53,7 @@ export function defaultVesting(): Vesting {
     mint: new PublicKey(Buffer.alloc(32)),
     vault: new PublicKey(Buffer.alloc(32)),
     grantor: new PublicKey(Buffer.alloc(32)),
-    balance: new BN(0),
+    outstanding: new BN(0),
     startBalance: new BN(0),
     startTs: new BN(0),
     endTs: new BN(0),

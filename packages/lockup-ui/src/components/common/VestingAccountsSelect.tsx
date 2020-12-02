@@ -70,6 +70,6 @@ function availableAmount(
   deposit?: boolean,
 ): BN {
   return deposit
-    ? v.account.balance.sub(v.account.whitelistOwned)
+    ? v.account.outstanding.sub(v.account.whitelistOwned)
     : v.account.whitelistOwned;
 }

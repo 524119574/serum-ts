@@ -270,6 +270,11 @@ function DepositDialog(props: DepositDialogProps) {
               amount: new BN(amount),
               entity: member.account.entity,
               vault,
+              vaultOwner: await registryClient.accounts.vaultAuthority(
+                registryClient.programId,
+                registryClient.registrar,
+                registrar.account,
+              ),
             });
             return tx;
           }

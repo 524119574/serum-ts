@@ -16,9 +16,7 @@ const network = networks.localhost;
 const programId = network.lockupProgramId;
 const url = network.url;
 
-const i64Zero = new BN(Buffer.alloc(8)).toTwos(64);
 const u64Zero = new BN(Buffer.alloc(8));
-const publicKeyZero = new PublicKey(Buffer.alloc(32));
 
 describe('End-to-end tests', () => {
   it('Runs against a localnetwork', async () => {
@@ -88,20 +86,20 @@ describe('End-to-end tests', () => {
     // Wait for a vesting period to pass.
     await sleep(5 * 1000);
 
-    // Redeem some locked SRM.
+    // Withdraw some locked SRM.
     const tokenAccount = await createTokenAccount(
       provider,
       srmMint,
       provider.wallet.publicKey,
     );
-    const redeemAmount = new BN([0, 0, 0, 0, 0, 0, 0, 10]);
-    await client.redeem({
-      amount: redeemAmount,
+    const withdrawAmount = new BN([0, 0, 0, 0, 0, 0, 0, 10]);
+    await client.withdraw({
+      amount: withdrawAmount,
       vesting,
       tokenAccount,
     });
     let token = await getTokenAccount(provider, tokenAccount);
-    expect(token.amount).toEqual(redeemAmount);
+    expect(token.amount).toEqual(withdrawAmount);
   });
 });
 

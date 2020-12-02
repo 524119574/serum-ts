@@ -114,7 +114,7 @@ export default function VestingAccountCard(props: VestingAccountCardProps) {
       'Withdrawing locked tokens',
       'Tokens unlocked',
       async () => {
-        const { tx } = await lockupClient.redeem({
+        const { tx } = await lockupClient.withdraw({
           amount: availableForWithdrawal!,
           vesting: vesting.publicKey,
           tokenAccount: withdrawalAccount!,
@@ -165,7 +165,7 @@ export default function VestingAccountCard(props: VestingAccountCardProps) {
               }}
             >
               <Typography variant="body1">
-                {`${vesting.account.balance.toNumber()} ${currencyLabel}`}
+                {`${vesting.account.outstanding.toNumber()} ${currencyLabel}`}
               </Typography>
             </div>
           </div>
@@ -202,7 +202,13 @@ export default function VestingAccountCard(props: VestingAccountCardProps) {
             )}
           </Typography>
           <Typography>
-            Current balance: {vesting.account.balance.toString()}
+            Locked outstanding: {vesting.account.outstanding.toString()}
+          </Typography>
+          <Typography>
+            Current balance:{' '}
+            {vesting.account.outstanding
+              .sub(vesting.account.whitelistOwned)
+              .toString()}
           </Typography>
           <Typography>
             Initial lockup: {vesting.account.startBalance.toString()}

@@ -667,6 +667,7 @@ export default class Client {
       depositorAuthority,
       amount,
       vault,
+      vaultOwner,
     } = req;
 
     const beneficiaryPubkey =
@@ -682,8 +683,10 @@ export default class Client {
       let m = await this.accounts.member(member);
       entity = m.entity;
     }
-    if (vault === undefined) {
-      vault = (await this.vaultFor(depositor)).vaultAddress as PublicKey;
+    if (vault === undefined || vaultOwner == undefined) {
+      const v = await this.vaultFor(depositor);
+      vault = v.vaultAddress as PublicKey;
+      vaultOwner = v.vault.owner;
     }
 
     const tx = new Transaction();
@@ -698,13 +701,14 @@ export default class Client {
             isSigner: true,
           },
           { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false },
+          { pubkey: vault, isWritable: true, isSigner: false },
+          { pubkey: vaultOwner, isWritable: false, isSigner: false },
           // Program specific.
           { pubkey: member, isWritable: true, isSigner: false },
           { pubkey: beneficiaryPubkey, isWritable: false, isSigner: true },
           { pubkey: entity, isWritable: true, isSigner: false },
           { pubkey: this.registrar, isWritable: false, isSigner: false },
           { pubkey: SYSVAR_CLOCK_PUBKEY, isWritable: false, isSigner: false },
-          { pubkey: vault, isWritable: true, isSigner: false },
         ].concat(await this.poolAccounts()),
         programId: this.programId,
         data: instruction.encode({
@@ -816,14 +820,14 @@ export default class Client {
             isSigner: true,
           },
           { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false },
-          { pubkey: vaultOwner, isWritable: true, isSigner: false },
+          { pubkey: vault, isWritable: true, isSigner: false },
+          { pubkey: vaultOwner, isWritable: false, isSigner: false },
           // Program specific.
           { pubkey: member, isWritable: true, isSigner: false },
           { pubkey: beneficiaryPubkey, isWritable: false, isSigner: true },
           { pubkey: entity, isWritable: true, isSigner: false },
           { pubkey: this.registrar, isWritable: false, isSigner: false },
           { pubkey: SYSVAR_CLOCK_PUBKEY, isWritable: false, isSigner: false },
-          { pubkey: vault, isWritable: true, isSigner: false },
         ].concat(await this.poolAccounts()),
         programId: this.programId,
         data: instruction.encode({
@@ -1417,7 +1421,6 @@ export default class Client {
       { pubkey: entity, isWritable: true, isSigner: false },
       { pubkey: this.registrar, isWritable: false, isSigner: false },
       { pubkey: SYSVAR_CLOCK_PUBKEY, isWritable: false, isSigner: false },
-      { pubkey: vault, isWritable: true, isSigner: false },
     ].concat(await this.poolAccounts(registrar));
     const relaySigners: Account[] = [];
 
@@ -1426,6 +1429,7 @@ export default class Client {
       instructionData,
       vesting,
       whitelistProgram: this.programId,
+      whitelistProgramVault: vault,
       whitelistProgramVaultAuthority: registryVaultAuthority,
       relayAccounts,
       relaySigners,
@@ -1468,7 +1472,6 @@ export default class Client {
       { pubkey: entity, isWritable: true, isSigner: false },
       { pubkey: this.registrar, isWritable: false, isSigner: false },
       { pubkey: SYSVAR_CLOCK_PUBKEY, isWritable: false, isSigner: false },
-      { pubkey: vault, isWritable: true, isSigner: false },
     ].concat(await this.poolAccounts(registrar));
     const relaySigners: Account[] = [];
 
@@ -1476,6 +1479,7 @@ export default class Client {
       instructionData,
       vesting,
       whitelistProgram: this.programId,
+      whitelistProgramVault: vault,
       whitelistProgramVaultAuthority: registryVaultAuthority,
       relayAccounts,
       relaySigners,
@@ -2090,6 +2094,7 @@ type DepositRequest = {
   beneficiary?: Account;
   depositorAuthority?: Account;
   vault?: PublicKey;
+  vaultOwner?: PublicKey;
 };
 
 type DepositResponse = {

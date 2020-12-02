@@ -257,7 +257,7 @@ export default class Client {
     };
   }
 
-  async redeem(req: RedeemRequest): Promise<RedeemResponse> {
+  async withdraw(req: WithdrawRequest): Promise<WithdrawResponse> {
     let { amount, beneficiary, vesting, tokenAccount } = req;
 
     const beneficiaryAddress =
@@ -288,7 +288,7 @@ export default class Client {
         ],
         programId: this.programId,
         data: instruction.encode({
-          redeem: {
+          withdraw: {
             amount,
           },
         }),
@@ -312,6 +312,7 @@ export default class Client {
       beneficiary,
       vesting,
       whitelistProgram,
+      whitelistProgramVault,
       whitelistProgramVaultAuthority,
       relayAccounts,
       relaySigners,
@@ -343,15 +344,16 @@ export default class Client {
           { pubkey: this.safe, isWritable: false, isSigner: false },
           { pubkey: safe.whitelist, isWritable: false, isSigner: false },
           { pubkey: whitelistProgram, isWritable: false, isSigner: false },
+          // Relay accounts.
+          { pubkey: vault, isWritable: true, isSigner: false },
+          { pubkey: vaultAuthority, isWritable: false, isSigner: false },
+          { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false },
+          { pubkey: whitelistProgramVault, isWritable: true, isSigner: false },
           {
             pubkey: whitelistProgramVaultAuthority,
             isWritable: false,
             isSigner: false,
           },
-          // Relay accounts.
-          { pubkey: vault, isWritable: true, isSigner: false },
-          { pubkey: vaultAuthority, isWritable: false, isSigner: false },
-          { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false },
         ].concat(relayAccounts),
         programId: this.programId,
         data: instruction.encode({
@@ -379,6 +381,7 @@ export default class Client {
       beneficiary,
       vesting,
       whitelistProgram,
+      whitelistProgramVault,
       whitelistProgramVaultAuthority,
       relayAccounts,
       relaySigners,
@@ -415,6 +418,7 @@ export default class Client {
           { pubkey: vault, isWritable: true, isSigner: false },
           { pubkey: vaultAuthority, isWritable: false, isSigner: false },
           { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false },
+          { pubkey: whitelistProgramVault, isWritable: true, isSigner: false },
           {
             pubkey: whitelistProgramVaultAuthority,
             isWritable: false,
@@ -683,14 +687,14 @@ type ClaimResponse = {
   tx: TransactionSignature;
 };
 
-type RedeemRequest = {
+type WithdrawRequest = {
   amount: BN;
   vesting: PublicKey;
   tokenAccount: PublicKey;
   beneficiary?: Account;
 };
 
-type RedeemResponse = {
+type WithdrawResponse = {
   tx: TransactionSignature;
 };
 
@@ -699,6 +703,7 @@ type WhitelistWithdrawRequest = {
   instructionData: Buffer;
   vesting: PublicKey;
   whitelistProgram: PublicKey;
+  whitelistProgramVault: PublicKey;
   whitelistProgramVaultAuthority: PublicKey;
   relayAccounts: Array<AccountMeta>;
   relaySigners: Array<Account>;
@@ -714,6 +719,7 @@ type WhitelistDepositRequest = {
   instructionData: Buffer;
   vesting: PublicKey;
   whitelistProgram: PublicKey;
+  whitelistProgramVault: PublicKey;
   whitelistProgramVaultAuthority: PublicKey;
   relayAccounts: Array<AccountMeta>;
   relaySigners: Array<Account>;
