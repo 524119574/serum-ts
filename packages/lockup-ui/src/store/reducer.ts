@@ -226,7 +226,13 @@ export type RegistryState = {
     Array<ProgramAccount<registry.accounts.PendingWithdrawal>>
   >;
   rewardEventQueue?: ProgramAccount<registry.accounts.RewardEventQueue>;
-  vendors: Map<string, ProgramAccount<registry.accounts.LockedRewardVendor>>;
+  vendors: Map<
+    string,
+    ProgramAccount<
+      | registry.accounts.LockedRewardVendor
+      | registry.accounts.UnlockedRewardVendor
+    >
+  >;
 };
 
 export const initialState: State = {

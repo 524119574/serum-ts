@@ -4,6 +4,7 @@ export * as member from './member';
 export * as pendingWithdrawal from './pending-withdrawal';
 export * as generation from './generation';
 export * as lockedRewardVendor from './locked-vendor';
+export * as unlockedRewardVendor from './unlocked-vendor';
 
 export { Entity } from './entity';
 export { Member } from './member';
@@ -15,5 +16,7 @@ export {
   RewardEvent,
   PoolDrop,
   LockedAlloc,
+	UnlockedAlloc,
 } from './reward-event-q';
 export { LockedRewardVendor } from './locked-vendor';
+export { UnlockedRewardVendor } from './unlocked-vendor';

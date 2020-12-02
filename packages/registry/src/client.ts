@@ -44,6 +44,7 @@ import {
 import * as instruction from './instruction';
 import * as accounts from './accounts';
 import { LockedRewardVendor } from './accounts/locked-vendor';
+import { UnlockedRewardVendor } from './accounts/unlocked-vendor';
 import {
   Registrar,
   SIZE as REGISTRAR_SIZE,
@@ -1252,22 +1253,22 @@ export default class Client {
       poolTokenMint,
       periodCount,
     } = req;
-    const lockedVendor = new Account();
-    const lockedVendorVault = new Account();
+    const vendor = new Account();
+    const vendorVault = new Account();
 
     const [
-      lockedVendorVaultAuthority,
+      vendorVaultAuthority,
       nonce,
     ] = await PublicKey.findProgramAddress(
-      [this.registrar.toBuffer(), lockedVendor.publicKey.toBuffer()],
+      [this.registrar.toBuffer(), vendor.publicKey.toBuffer()],
       this.programId,
     );
 
     const createLockedVendorVaultInstrs = await createTokenAccountInstrs(
       this.provider,
-      lockedVendorVault.publicKey,
+      vendorVault.publicKey,
       depositorMint,
-      lockedVendorVaultAuthority,
+      vendorVaultAuthority,
     );
 
     const tx = new Transaction();
@@ -1277,7 +1278,7 @@ export default class Client {
       // Create LockedRewardVendor account.
       SystemProgram.createAccount({
         fromPubkey: this.provider.wallet.publicKey,
-        newAccountPubkey: lockedVendor.publicKey,
+        newAccountPubkey: vendor.publicKey,
         lamports: await this.provider.connection.getMinimumBalanceForRentExemption(
           accounts.lockedRewardVendor.SIZE,
         ),
@@ -1296,9 +1297,9 @@ export default class Client {
           },
           { pubkey: pool, isWritable: false, isSigner: false },
           { pubkey: poolTokenMint, isWritable: false, isSigner: false },
-          { pubkey: lockedVendor.publicKey, isWritable: true, isSigner: false },
+          { pubkey: vendor.publicKey, isWritable: true, isSigner: false },
           {
-            pubkey: lockedVendorVault.publicKey,
+            pubkey: vendorVault.publicKey,
             isWritable: true,
             isSigner: false,
           },
@@ -1319,7 +1320,91 @@ export default class Client {
       }),
     );
 
-    let signers: any = [lockedVendor, lockedVendorVault];
+    let signers: any = [vendor, vendorVault];
+    let txSig = await this.provider.send(tx, signers);
+    return {
+      tx: txSig,
+    };
+  }
+
+  async dropUnlockedReward(
+    req: DropUnlockedRewardRequest,
+  ): Promise<DropUnlockedRewardResponse> {
+    let {
+      total,
+      expiryTs,
+      expiryReceiver,
+      depositor,
+      depositorMint,
+      pool,
+      poolTokenMint,
+    } = req;
+    const vendor = new Account();
+    const vendorVault = new Account();
+
+    const [
+      vendorVaultAuthority,
+      nonce,
+    ] = await PublicKey.findProgramAddress(
+      [this.registrar.toBuffer(), vendor.publicKey.toBuffer()],
+      this.programId,
+    );
+
+    const createUnlockedVendorVaultInstrs = await createTokenAccountInstrs(
+      this.provider,
+      vendorVault.publicKey,
+      depositorMint,
+      vendorVaultAuthority,
+    );
+
+    const tx = new Transaction();
+    tx.add(
+      // Create UnlockedRewardVendor token vault.
+      ...createUnlockedVendorVaultInstrs,
+      // Create UnlockedRewardVendor account.
+      SystemProgram.createAccount({
+        fromPubkey: this.provider.wallet.publicKey,
+        newAccountPubkey: vendor.publicKey,
+        lamports: await this.provider.connection.getMinimumBalanceForRentExemption(
+          accounts.unlockedRewardVendor.SIZE,
+        ),
+        space: accounts.unlockedRewardVendor.SIZE,
+        programId: this.programId,
+      }),
+      new TransactionInstruction({
+        keys: [
+          { pubkey: this.rewardEventQueue, isWritable: true, isSigner: false },
+          { pubkey: this.registrar, isWritable: false, isSigner: false },
+          { pubkey: depositor, isWritable: true, isSigner: false },
+          {
+            pubkey: this.provider.wallet.publicKey,
+            isWritable: false,
+            isSigner: false,
+          },
+          { pubkey: pool, isWritable: false, isSigner: false },
+          { pubkey: poolTokenMint, isWritable: false, isSigner: false },
+          { pubkey: vendor.publicKey, isWritable: true, isSigner: false },
+          {
+            pubkey: vendorVault.publicKey,
+            isWritable: true,
+            isSigner: false,
+          },
+          { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false },
+          { pubkey: SYSVAR_CLOCK_PUBKEY, isWritable: false, isSigner: false },
+        ],
+        programId: this.programId,
+        data: instruction.encode({
+          dropUnlockedReward: {
+            total,
+            expiryTs,
+            expiryReceiver,
+            nonce,
+          },
+        }),
+      }),
+    );
+
+    let signers: any = [vendor, vendorVault];
     let txSig = await this.provider.send(tx, signers);
     return {
       tx: txSig,
@@ -1382,6 +1467,46 @@ export default class Client {
     );
 
     let signers: any = [vesting, vestingVault];
+    let txSig = await this.provider.send(tx, signers);
+    return {
+      tx: txSig,
+    };
+  }
+
+  async claimUnlockedReward(
+    req: ClaimUnlockedRewardRequest,
+  ): Promise<ClaimUnlockedRewardResponse> {
+    let {
+      cursor,
+      member,
+      vendor,
+      vendorVault,
+      vendorSigner,
+			token,
+    } = req;
+
+    const tx = new Transaction();
+    tx.add(
+      new TransactionInstruction({
+        keys: [
+          { pubkey: member, isWritable: true, isSigner: false },
+          { pubkey: this.registrar, isWritable: false, isSigner: false },
+          { pubkey: vendor, isWritable: false, isSigner: false },
+          { pubkey: vendorVault, isWritable: true, isSigner: false },
+          { pubkey: vendorSigner, isWritable: false, isSigner: false },
+          { pubkey: token, isWritable: true, isSigner: false },
+          { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false },
+        ],
+        programId: this.programId,
+        data: instruction.encode({
+          claimUnlockedReward: {
+            cursor,
+          },
+        }),
+      }),
+    );
+
+    let signers: any = [];
     let txSig = await this.provider.send(tx, signers);
     return {
       tx: txSig,
@@ -1976,18 +2101,31 @@ class Accounts {
     };
   }
 
-  lockedRewardVendorAuthority(
-    lockedVendor: PublicKey,
+  async rewardVendorAuthority(
+    vendor: PublicKey,
     nonce: number,
   ): Promise<PublicKey> {
     return PublicKey.createProgramAddress(
       [
         this.registrarAddress.toBuffer(),
-        lockedVendor.toBuffer(),
+        vendor.toBuffer(),
         Buffer.from([nonce]),
       ],
       this.programId,
     );
+  }
+
+  async unlockedRewardVendor(
+    address: PublicKey,
+  ): Promise<ProgramAccount<UnlockedRewardVendor>> {
+    const accountInfo = await this.provider.connection.getAccountInfo(address);
+    if (accountInfo === null) {
+      throw new Error(`Vendor does not exist ${address}`);
+    }
+    return {
+      publicKey: address,
+      account: accounts.unlockedRewardVendor.decode(accountInfo.data),
+    };
   }
 }
 
@@ -2210,6 +2348,20 @@ type DropLockedRewardResponse = {
   tx: TransactionSignature;
 };
 
+type DropUnlockedRewardRequest = {
+  total: BN;
+  expiryTs: BN;
+  expiryReceiver: PublicKey;
+  depositor: PublicKey;
+  depositorMint: PublicKey;
+  pool: PublicKey;
+  poolTokenMint: PublicKey;
+};
+
+type DropUnlockedRewardResponse = {
+  tx: TransactionSignature;
+};
+
 type ClaimLockedRewardRequest = {
   cursor: number;
   member: PublicKey;
@@ -2223,6 +2375,19 @@ type ClaimLockedRewardRequest = {
 
 type ClaimLockedRewardResponse = {
   tx: TransactionSignature;
+};
+
+type ClaimUnlockedRewardRequest = {
+  cursor: number;
+  member: PublicKey;
+  vendor: PublicKey;
+  vendorVault: PublicKey;
+  vendorSigner: PublicKey;
+	token: PublicKey;
+};
+
+type ClaimUnlockedRewardResponse = {
+	tx: TransactionSignature;
 };
 
 type DepositLockedRequest = {

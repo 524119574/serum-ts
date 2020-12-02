@@ -1,6 +1,5 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { useSnackbar } from 'notistack';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
@@ -32,8 +31,6 @@ export default function Me() {
       member: state.registry.member,
     };
   });
-
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const prices = new PoolPrices({
     poolVault: poolVault!.account,

@@ -51,6 +51,7 @@ export default function OwnedTokenAccountsSelect(p: Props) {
                   width: '100%',
                   display: 'flex',
                   justifyContent: 'space-between',
+                  overflow: 'hidden',
                 }}
               >
                 <div>{`${ownedTokenAccount.publicKey}`}</div>

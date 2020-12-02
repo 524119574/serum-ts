@@ -32,7 +32,9 @@ export type RegistryInstruction =
   | Slash
   | DropPoolReward
   | DropLockedReward
-  | ClaimLockedReward;
+	| DropUnlockedReward
+  | ClaimLockedReward
+	| ClaimUnlockedReward;
 
 type Initialize = {
   authority: PublicKey;
@@ -104,10 +106,21 @@ type DropLockedReward = {
   nonce: number;
 };
 
+type DropUnlockedReward = {
+  total: BN;
+  expiryTs: BN;
+  expiryReceiver: PublicKey;
+  nonce: number;
+};
+
 type ClaimLockedReward = {
   cursor: number;
   // Nonce for the vesting account to be created.
   nonce: number;
+};
+
+type ClaimUnlockedReward = {
+  cursor: number;
 };
 
 const REGISTRY_INSTRUCTION_LAYOUT: Layout<RegistryInstruction> = rustEnum([
@@ -159,7 +172,14 @@ const REGISTRY_INSTRUCTION_LAYOUT: Layout<RegistryInstruction> = rustEnum([
     ],
     'dropLockedReward',
   ),
+	struct([
+		u64('total'),
+		i64('expiryTs'),
+		publicKey('expiryReceiver'),
+		u8('nonce'),
+	], 'dropUnlockedReward'),
   struct([u32('cursor'), u8('nonce')], 'claimLockedReward'),
+  struct([u32('cursor')], 'claimUnlockedReward'),
 ]);
 
 export function decode(data: Buffer): RegistryInstruction {
