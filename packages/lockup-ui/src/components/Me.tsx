@@ -277,6 +277,16 @@ function MemberBalancesCard(props: MemberBalancesCardProps) {
       balance: member.account.balances.currentMegaDeposit.toString(),
     },
   ];
+  const lockedRows = [
+    {
+      token: 'SRM',
+      balance: member.account.balances.delegate.deposit.toString(),
+    },
+    {
+      token: 'MSRM',
+      balance: member.account.balances.delegate.megaDeposit.toString(),
+    },
+  ];
   let value = prices.basket(member.account.balances.sptAmount, false)
     .quantities;
   let megaValue = prices.megaBasket(
@@ -351,6 +361,9 @@ function MemberBalancesCard(props: MemberBalancesCardProps) {
           <Typography style={{ fontWeight: 'bold' }}>
             Available Balances
           </Typography>
+          <Typography color="textSecondary" style={{ fontSize: '14px' }}>
+            Total balances available for staking and withdrawal.
+          </Typography>
           <TableContainer>
             <Table>
               <TableHead>
@@ -361,6 +374,36 @@ function MemberBalancesCard(props: MemberBalancesCardProps) {
               </TableHead>
               <TableBody>
                 {rows.map(row => (
+                  <TableRow key={row.token}>
+                    <TableCell component="th" scope="row">
+                      {row.token}
+                    </TableCell>
+                    <TableCell align="right">{row.balance}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </div>
+        <div style={{ marginTop: '16px', marginBottom: '40px' }}>
+          <Typography style={{ fontWeight: 'bold' }}>
+            Locked Deposits
+          </Typography>
+          <Typography color="textSecondary" style={{ fontSize: '14px' }}>
+            Locked deposits are funds transferred from the lockup program. These
+            funds cannot be withdrawn directly, but instead, must be withdrawn
+            back to a locked account.
+          </Typography>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Token</TableCell>
+                  <TableCell align="right">Balance</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {lockedRows.map(row => (
                   <TableRow key={row.token}>
                     <TableCell component="th" scope="row">
                       {row.token}

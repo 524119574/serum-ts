@@ -38,35 +38,7 @@ export const networks: Networks = {
     url: 'https://devnet.solana.com',
     explorerClusterSuffix: 'devnet',
 
-    srm: new PublicKey('2cF7c8G3BK5qKF8LNqM7faSeLEyQsGJHCHVwZFKWbJtc'),
-    msrm: new PublicKey('5Q2W1rzEMiQCepQ3SHJXLYFEvy9Y6to5UzMheGQJ2kAg'),
-    god: new PublicKey('Dk9ix6pNMSU1aAFXBJmQiJsj2VS4PUtqSYk8UCS6TTQy'),
-    megaGod: new PublicKey('48wVG1CaRG3NdXk882BkWHpALxCNKgYuKie3cvnNceis'),
-    registryProgramId: new PublicKey(
-      'HnJT3fDpvoJRJs4Ep8KUobpUpGms59SM7VhijBpuHqaB',
-    ),
-    stakeProgramId: new PublicKey(
-      'A6dAqQPjQifH51gTdyEe6N8K2Xi5E25FNMLnvpZurbDN',
-    ),
-    lockupProgramId: new PublicKey(
-      'FsPCjwmPLQm1CLp3S78XHsHVEKiTLYBP75ogtWMRXKL',
-    ),
-    retbufProgramId: new PublicKey(
-      '3w2Q6XjS2BDpxHVRzs8oWbNuH7ivZp1mVo3mbq318oyG',
-    ),
-    metaEntityProgramId: new PublicKey(
-      '2qc6iMR7h8ghohhCeLWwdRa7pJ5xXYTi9fVrnKkbidwy',
-    ),
-    registrar: new PublicKey('9ULmsGTtk63RdKQT7QAKEr8Dtm5GdVZuCW4FazFpaDGE'),
-    rewardEventQueue: new PublicKey(
-      'FtDGWVjv21PAmsPZ64HkinwX5b1E6MnaVyHWg4MDawaz',
-    ),
-    safe: new PublicKey('6jtwucztF9ZLzoC1BnfArRF7Ep1xB4VvJGcYgX8UAriJ'),
-    retbuf: new PublicKey('FdWnZT21N8dhxiUdAbtH4QdCkzwaJpFZhi1tS44sJbpk'),
-    defaultEntity: new PublicKey(
-      'BcsmPF7G7TN8TH2yZboxaLgmnC3NfYmEGjCnXyXDVJC7',
-    ),
-  },
+		srm: new PublicKey('DLRk8GWo1YF4Kc5DrVQkaMDQti27VVGzR3Y1Tm8Frpyj'), msrm: new PublicKey('CrtnNeZg3tnRKnxxYxjsnkYNk1xRjhEci8ZJhuRAU7WX'), god: new PublicKey('HtbxQ8ZfenVhw5G8GSVK5nymbNXXo37fwwp9sjAjaBEx'), megaGod: new PublicKey('DKmDLZUUkfaFEQ3PWYezmoL3BwaEt1QHHYrLGPWuCMiV'), registryProgramId: new PublicKey( 'G5W9X8gjf2v8QH3D7aQrFhHSxMK7sxB1wQQpKPue2Nnv', ), stakeProgramId: new PublicKey( 'APU8W2tEUhiAAeaiEtYKdaMtB3KrBQXqyiinvjGurvBf', ), lockupProgramId: new PublicKey( 'Bk9M7yycNZiKkFtKDzzLQAhvQjWMqxYSFJzxFspL9uJ', ), retbufProgramId: new PublicKey( '3w2Q6XjS2BDpxHVRzs8oWbNuH7ivZp1mVo3mbq318oyG', ), metaEntityProgramId: new PublicKey( 'H6PGzjRWMBd2dajxL5ZjDc9LU4onSB5PbrqHS94Hgoed', ), registrar: new PublicKey('2w6i8FLi7DJ2UrTTGeKwkotgvM2k9FtfcP7vLfzT5pnx'), rewardEventQueue: new PublicKey('ozD1sY1rdizmPkr29PCyrWVrUC73HLQurTnvtsFmC6P'), safe: new PublicKey('2u8tjVJuz8P7EYa4WL3x2oHndjZLZNfA4vkWaa3SP75f'), retbuf: new PublicKey('8PUeeTe22fHJqTVB5wahQmqZjaHzDPC7arYhWSnTLqZA'), defaultEntity: new PublicKey( 'GQmf9Ag2EHC6RyJuxyEkUMMRzB8zhhSEq8Bmae7Wxyhi', ), },
 
   // Fill in with your local cluster addresses.
   localhost: {

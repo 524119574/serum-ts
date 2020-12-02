@@ -35,22 +35,32 @@ export default function BootstrapProvider(props: PropsWithChildren<ReactNode>) {
       const conn = registryClient.accounts.rewardEventQueueConnect(
         registryClient.rewardEventQueue,
       );
-      conn.on('connected', (rewardEventQueue: ProgramAccount<registry.accounts.RewardEventQueue>) => {
-        dispatch({
-          type: ActionType.RegistrySetRewardEventQueue,
-          item: {
-            rewardEventQueue,
-          },
-        });
-      });
-      conn.on('change', (rewardEventQueue: ProgramAccount<registry.accounts.RewardEventQueue>) => {
-        dispatch({
-          type: ActionType.RegistrySetRewardEventQueue,
-          item: {
-            rewardEventQueue,
-          },
-        });
-      });
+      conn.on(
+        'connected',
+        (
+          rewardEventQueue: ProgramAccount<registry.accounts.RewardEventQueue>,
+        ) => {
+          dispatch({
+            type: ActionType.RegistrySetRewardEventQueue,
+            item: {
+              rewardEventQueue,
+            },
+          });
+        },
+      );
+      conn.on(
+        'change',
+        (
+          rewardEventQueue: ProgramAccount<registry.accounts.RewardEventQueue>,
+        ) => {
+          dispatch({
+            type: ActionType.RegistrySetRewardEventQueue,
+            item: {
+              rewardEventQueue,
+            },
+          });
+        },
+      );
     };
     const fetchEntityAccounts = async () => {
       const entityAccounts = await registryClient.accounts.allEntities();
